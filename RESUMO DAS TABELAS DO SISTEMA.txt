@@ -1,0 +1,93 @@
+📊 RESUMO DAS TABELAS DO SISTEMA (TXT FORMATADO)
+
+=============================================================================================================================================================
+👥 TABELA USUÁRIOS
+=============================================================================================================================================================
+
+• Armazena: Dados de login e perfil dos usuários
+• Colunas principais:
+  - id (PK)          | Identificador único
+  - nome             | Nome completo
+  - email            | E-mail (único)
+  - senha_hash       | Senha criptografada
+  - grupo            | colaborador/líder/admin
+  - ultimo_login     | Data do último acesso
+• Relaciona com: 
+  → matriculas (1:N)
+  → certificados (1:N)
+  → logs_acesso (1:N)
+
+=============================================================================================================================================================
+📚 TABELA CURSOS
+=============================================================================================================================================================
+• Armazena: Cursos disponíveis
+• Colunas principais:
+  - id (PK)          | Identificador único
+  - titulo           | Nome do curso
+  - categoria_id (FK)| Link com categorias
+  - criador_id (FK)  | Quem criou (usuário)
+• Relaciona com:
+  → aulas (1:N via módulos)
+  → matriculas (1:N)
+
+=============================================================================================================================================================
+🎬 TABELA AULAS
+=============================================================================================================================================================
+
+• Armazena: Vídeos e conteúdo
+• Colunas principais:
+  - id (PK)          | Identificador único
+  - modulo_id (FK)   | Módulo pertencente
+  - video_path       | /videos/curso_X/aula_Y.mp4
+  - duracao_minutos  | Tempo da aula
+• Relaciona com:
+  → modulos (N:1)
+
+=============================================================================================================================================================
+📝 TABELA MATRÍCULAS
+=============================================================================================================================================================
+
+• Armazena: Quem está em qual curso
+• Colunas principais:
+  - usuario_id (FK)  | Link com usuário
+  - curso_id (FK)    | Link com curso
+  - progresso        | % concluído (0-100)
+• Chave composta: (usuario_id + curso_id)
+
+=============================================================================================================================================================
+🏆 TABELA CERTIFICADOS
+=============================================================================================================================================================
+• Armazena: Certificados emitidos
+• Colunas principais:
+  - usuario_id (FK)  | Dono do certificado
+  - curso_id (FK)    | Curso concluído
+  - codigo_verificacao | Código único (CERT-XXX)
+• Relaciona com:
+  → usuarios (N:1)
+  → cursos (N:1)
+
+=============================================================================================================================================================
+🔐 TABELA LOGS_ACESSO
+=============================================================================================================================================================
+• Armazena: Histórico de logins
+• Colunas principais:
+  - usuario_id (FK)  | Quem acessou
+  - acao             | login/logout/tentativa
+  - ip               | Endereço de acesso
+
+=============================================================================================================================================================
+🔗 RELACIONAMENTOS CRUZADOS
+=============================================================================================================================================================
+1. USUÁRIO → faz MATRÍCULA → em CURSO
+2. CURSO → contém AULAS → organizadas em MÓDULOS
+3. USUÁRIO → recebe CERTIFICADO → por CURSO concluído
+4. TUDO → é registrado em LOGS
+=============================================================================================================================================================
+=============================================================================================================================================================
+
+💾 ARMAZENAMENTO:
+- Vídeos: /videos/curso_[ID]/aula_[ID].mp4
+- Certificados: Gerados como PDF sob demanda
+
+📌 LEGENDA:
+PK = Primary Key | FK = Foreign Key | N:M = Muitos para muitos
