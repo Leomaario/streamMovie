@@ -10,6 +10,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.hrrb.backend.service.FileStorageService;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,10 +90,35 @@ public class VideoController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- ENDPOINT DE STREAMING ---
 
-    // GET /api/videos/{id}/stream - Pega o arquivo de vídeo para tocar no player
-    @GetMapping("/{id}/stream") // <<<--- CORREÇÃO: Garantindo que a rota do GET para o stream esteja correta e única.
+    // --- ENDPOINT CORRETO PARA UPLOAD DE VÍDEO ---
+    // Responde a POST /api/videos/upload e consome dados de formulário
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<VideoDTO> uploadVideo(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("descricao") String descricao,
+            @RequestParam("catalogoId") Long catalogoId) {
+
+        String caminhoArquivo = fileStorageService.storeFile(file);
+
+        return catalogoRepository.findById(catalogoId)
+                .map(catalogo -> {
+                    Video novoVideo = new Video();
+                    novoVideo.setTitulo(titulo);
+                    novoVideo.setDescricao(descricao);
+                    novoVideo.setCatalogo(catalogo);
+                    novoVideo.setCaminhoArquivo(caminhoArquivo);
+
+                    Video videoSalvo = videoRepository.save(novoVideo);
+                    return new ResponseEntity<>(new VideoDTO(videoSalvo), HttpStatus.CREATED);
+                })
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
+
+
+    // --- ENDPOINT DE STREAMING ---
+    @GetMapping("/{id}/stream")
     public ResponseEntity<ResourceRegion> streamVideo(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
         Optional<Video> videoData = videoRepository.findById(id);
         if (videoData.isEmpty()) {
@@ -131,7 +158,7 @@ public class VideoController {
         if (range.isPresent()) {
             long start = range.get().getRangeStart(contentLength);
             long end = range.get().getRangeEnd(contentLength);
-            long rangeLength = Math.min(1_048_576L, end - start + 1); // Envia no máximo 1MB por vez
+            long rangeLength = Math.min(1_048_576L, end - start + 1);
             return new ResourceRegion(video, start, rangeLength);
         } else {
             long rangeLength = Math.min(1_048_576L, contentLength);
