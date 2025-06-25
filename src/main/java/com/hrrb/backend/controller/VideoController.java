@@ -5,13 +5,13 @@ import com.hrrb.backend.model.Catalogo;
 import com.hrrb.backend.model.Video;
 import com.hrrb.backend.repository.CatalogoRepository;
 import com.hrrb.backend.repository.VideoRepository;
+import com.hrrb.backend.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.hrrb.backend.service.FileStorageService;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,84 +26,23 @@ public class VideoController {
 
     @Autowired
     private VideoRepository videoRepository;
-
     @Autowired
     private CatalogoRepository catalogoRepository;
+    @Autowired
+    private FileStorageService fileStorageService;
 
 
-    // GET /api/videos - Lista todos os vídeos
-    @GetMapping
-    public ResponseEntity<List<VideoDTO>> listarTodosVideos() {
-        List<Video> videos = videoRepository.findAll();
-        // <<<--- MUDANÇA: Garantindo que o DTO seja usado para evitar erros de serialização ---<<<
-        List<VideoDTO> videoDTOs = videos.stream().map(VideoDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(videoDTOs);
-    }
-
-    // GET /api/videos/{id} - Busca um vídeo por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<VideoDTO> buscarVideoPorId(@PathVariable Long id) {
-        // <<<--- MUDANÇA: Refatorado para ficar mais limpo e já retornar o DTO ---<<<
-        return videoRepository.findById(id)
-                .map(video -> ResponseEntity.ok(new VideoDTO(video)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // POST /api/videos - Cria um novo vídeo
-    @PostMapping
-    public ResponseEntity<VideoDTO> criarVideo(@RequestBody Video novoVideo) {
-        if (novoVideo.getCatalogo() == null || novoVideo.getCatalogo().getId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return catalogoRepository.findById(novoVideo.getCatalogo().getId())
-                .map(catalogo -> {
-                    novoVideo.setCatalogo(catalogo);
-                    Video videoSalvo = videoRepository.save(novoVideo);
-                    return new ResponseEntity<>(new VideoDTO(videoSalvo), HttpStatus.CREATED);
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // PUT /api/videos/{id} - Atualiza um vídeo existente
-    @PutMapping("/{id}") // <<<--- CORREÇÃO: A rota para ATUALIZAR é no ID do vídeo, não no /stream.
-    public ResponseEntity<VideoDTO> atualizarVideo(@PathVariable Long id, @RequestBody Video videoDetalhes) {
-        // <<<--- MUDANÇA: Refatorado para um estilo mais funcional e limpo ---<<<
-        return videoRepository.findById(id)
-                .map(videoExistente -> {
-                    videoExistente.setTitulo(videoDetalhes.getTitulo());
-                    videoExistente.setDescricao(videoDetalhes.getDescricao());
-                    // Adicione outros campos para atualizar se necessário (ex: caminhoArquivo, duracaoSegundos)
-                    Video videoSalvo = videoRepository.save(videoExistente);
-                    return ResponseEntity.ok(new VideoDTO(videoSalvo));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // DELETE /api/videos/{id} - Deleta um vídeo
-    @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deletarVideo(@PathVariable Long id) {
-        // <<<--- MUDANÇA: Lógica simplificada e mais direta ---<<<
-        if (!videoRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        videoRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    // --- ENDPOINT CORRETO PARA UPLOAD DE VÍDEO ---
-    // Responde a POST /api/videos/upload e consome dados de formulário
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<VideoDTO> uploadVideo(
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<VideoDTO> uploadAndCreateVideo(
             @RequestParam("file") MultipartFile file,
             @RequestParam("titulo") String titulo,
             @RequestParam("descricao") String descricao,
             @RequestParam("catalogoId") Long catalogoId) {
 
-        String caminhoArquivo = fileStorageService.storeFile(file);
-
         return catalogoRepository.findById(catalogoId)
                 .map(catalogo -> {
+                    String caminhoArquivo = fileStorageService.storeFile(file, catalogoId);
+
                     Video novoVideo = new Video();
                     novoVideo.setTitulo(titulo);
                     novoVideo.setDescricao(descricao);
@@ -113,11 +52,46 @@ public class VideoController {
                     Video videoSalvo = videoRepository.save(novoVideo);
                     return new ResponseEntity<>(new VideoDTO(videoSalvo), HttpStatus.CREATED);
                 })
-                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
     }
 
+    @GetMapping
+    public ResponseEntity<List<VideoDTO>> listarTodosVideos() {
+        List<Video> videos = videoRepository.findAll();
+        List<VideoDTO> videoDTOs = videos.stream().map(VideoDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(videoDTOs);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VideoDTO> buscarVideoPorId(@PathVariable Long id) {
+        return videoRepository.findById(id)
+                .map(video -> ResponseEntity.ok(new VideoDTO(video)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VideoDTO> atualizarVideo(@PathVariable Long id, @RequestBody Video videoDetalhes) {
+        return videoRepository.findById(id)
+                .map(videoExistente -> {
+                    videoExistente.setTitulo(videoDetalhes.getTitulo());
+                    videoExistente.setDescricao(videoDetalhes.getDescricao());
+                    Video videoSalvo = videoRepository.save(videoExistente);
+                    return ResponseEntity.ok(new VideoDTO(videoSalvo));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deletarVideo(@PathVariable Long id) {
+        if (!videoRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        videoRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 
     // --- ENDPOINT DE STREAMING ---
+
     @GetMapping("/{id}/stream")
     public ResponseEntity<ResourceRegion> streamVideo(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
         Optional<Video> videoData = videoRepository.findById(id);

@@ -1,6 +1,3 @@
-// Crie um novo pacote chamado 'service' (ex: com.hrb.backend.service)
-// e coloque este arquivo dentro dele.
-
 package com.hrrb.backend.service;
 
 import com.hrrb.backend.model.Catalogo;
@@ -21,51 +18,33 @@ import java.util.Optional;
 public class FileStorageService {
 
     @Autowired
-    private CatalogoRepository catalogoRepository; // Precisamos disso para pegar o caminho da pasta
+    private CatalogoRepository catalogoRepository;
 
-    /**
-     * Armazena um arquivo na pasta correta, baseada no catálogo.
-     * @param file O arquivo de vídeo enviado pelo usuário.
-     * @param catalogoId O ID do catálogo ao qual o vídeo pertence.
-     * @return O caminho completo onde o arquivo foi salvo.
-     */
     public String storeFile(MultipartFile file, Long catalogoId) {
-        // Busca o catálogo no banco para descobrir a pasta de destino
         Optional<Catalogo> catalogoOpt = catalogoRepository.findById(catalogoId);
         if (catalogoOpt.isEmpty() || catalogoOpt.get().getCaminhoPasta() == null || catalogoOpt.get().getCaminhoPasta().isBlank()) {
             throw new RuntimeException("Catálogo não encontrado ou não possui uma pasta de upload configurada.");
         }
 
-        // Pega o caminho da pasta do catálogo (ex: "D:/videos/impressoras/")
         Path fileStorageLocation = Paths.get(catalogoOpt.get().getCaminhoPasta()).toAbsolutePath().normalize();
 
         try {
-            // Cria a pasta do catálogo se ela não existir
             Files.createDirectories(fileStorageLocation);
         } catch (Exception ex) {
             throw new RuntimeException("Não foi possível criar o diretório do catálogo.", ex);
         }
 
-        // Limpa e pega o nome original do arquivo
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
-            // Verifica se o nome do arquivo tem caracteres inválidos
             if (fileName.contains("..")) {
                 throw new RuntimeException("Nome de arquivo inválido: " + fileName);
             }
-
-            // Define o caminho completo do arquivo (pasta + nome do arquivo)
             Path targetLocation = fileStorageLocation.resolve(fileName);
-
-            // Copia o arquivo para o destino, sobrescrevendo se já existir
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            // Retorna o caminho completo como uma String para salvar no banco
             return targetLocation.toString();
-
         } catch (IOException ex) {
-            throw new RuntimeException("Não foi possível salvar o arquivo " + fileName, ex);
+            throw new RuntimeException("Não foi possível salvar o arquivo " + "Veja se ja tem video com esse nome, se sim, altere e tente novamente." + fileName, ex);
         }
     }
 }
