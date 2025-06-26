@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-// Esta é a nossa "fábrica de crachás" (Tokens JWT)
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
@@ -38,5 +37,37 @@ public class JwtUtils {
                 .compact();
     }
 
-    // ... métodos para validar e ler o token virão aqui depois ...
+    // --- MÉTODOS ADICIONADOS ---
+
+    /**
+     * Extrai o nome de usuário (subject) de um token existente.
+     * @param token O token JWT como string.
+     * @return O nome de usuário contido no token.
+     */
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    /**
+     * Valida um token JWT, verificando sua assinatura e data de validade.
+     * @param authToken O token a ser validado.
+     * @return true se o token for válido, false caso contrário.
+     */
+    public boolean validateJwtToken(String authToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
+            return true;
+        } catch (MalformedJwtException e) {
+            logger.error("Token JWT inválido: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("Token JWT expirou: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("Token JWT não é suportado: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("A string de claims JWT está vazia: {}", e.getMessage());
+        }
+
+        return false;
+    }
 }

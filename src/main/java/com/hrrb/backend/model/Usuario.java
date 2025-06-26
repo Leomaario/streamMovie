@@ -17,7 +17,7 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Não precisa de @Column(name="nome") porque o nome do campo já é "nome"
+
     @Column(nullable = false, unique = true)
     private String nome;
 
@@ -35,8 +35,9 @@ public class Usuario {
     @Column(name = "foto_perfil_path")
     private String fotoPerfilPath;
 
-    @Column(nullable = false)
-    private String grupo;
+    @ManyToOne // Dizendo que Muitos Usuários podem pertencer a Um Grupo
+    @JoinColumn(name = "grupo_id", nullable = false) // Mapeando para a coluna de chave estrangeira
+    private Grupo grupo;
 
     // CORREÇÃO 2: Este campo agora mapeia para a coluna "permissoes", não "usuario"
     @Column(name = "permissoes", nullable = false)

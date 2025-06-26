@@ -15,5 +15,9 @@ public class JwtResponse {
     private String email;
 
     public JwtResponse(String jwt, Long id, String username, String email) {
+            this.token = jwt; // Atribui o token recebido ao campo 'token'
+            this.id = id;
+            this.usuario = username; // Atribui o 'username' recebido ao campo 'usuario'
+            this.email = email;
     }
 }
