@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .securityContext(context -> context.securityContextRepository(new RequestAttributeSecurityContextRepository()))
+
                 .authorizeHttpRequests(authorize -> authorize
                         // Rotas públicas (login, etc)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -66,6 +67,7 @@ public class SecurityConfig {
 
                         // Rotas de ADMIN (ex: gerir usuários)
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
 
                         // Rotas de LÍDER e ADMIN (gerir vídeos e catálogos)
@@ -75,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/catalogos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+
 
                         // Rotas que QUALQUER usuário logado pode acessar (ver conteúdo)
                         .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**", "/api/certificados/**").authenticated()

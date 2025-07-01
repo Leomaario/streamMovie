@@ -10,6 +10,8 @@ import com.hrrb.backend.repository.GrupoRepository;
 import com.hrrb.backend.repository.UsuarioRepository;
 import com.hrrb.backend.security.jwt.JwtUtils;
 import com.hrrb.backend.security.services.UserDetailsImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class AuthController {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -41,19 +46,30 @@ public class AuthController {
     UsuarioRepository usuarioRepository;
 
     @Autowired
-    GrupoRepository grupoRepository; // <<< Injetado para buscar o grupo
+    GrupoRepository grupoRepository;
 
-    // O seu método de login está correto, apenas garanti que ele envia as permissões
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsuario(), loginRequest.getSenha()));
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
+
+        // --- BLOCO DE DEPURAÇÃO FINAL ---
+        logger.info("=======================================");
+        logger.info("INSPETOR DE LOGIN PARA O UTILIZADOR: {}", userDetails.getUsername());
+        logger.info("ID DO UTILIZADOR: {}", userDetails.getId());
+        logger.info("PERMISSÕES CARREGADAS DO BANCO: {}", roles);
+        logger.info("A ENVIAR ESTA RESPOSTA PARA O FRONTEND...");
+        logger.info("=======================================");
+        // ------------------------------------
+
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
     }
 
@@ -66,8 +82,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("Erro: Email já está em uso!"));
         }
 
-        // --- LÓGICA DE GRUPO CORRIGIDA ---
-        // Busca o objeto Grupo no banco a partir do nome do grupo que veio do formulário
         Grupo grupo = grupoRepository.findByNome(registroRequest.getGrupo())
                 .orElseThrow(() -> new RuntimeException("Erro: Grupo '" + registroRequest.getGrupo() + "' não encontrado."));
 
@@ -76,7 +90,7 @@ public class AuthController {
         usuario.setUsuario(registroRequest.getUsuario());
         usuario.setEmail(registroRequest.getEmail());
         usuario.setSenha(encoder.encode(registroRequest.getSenha()));
-        usuario.setGrupo(grupo); // Associa o objeto Grupo encontrado, e não mais uma String
+        usuario.setGrupo(grupo);
         usuario.setPermissoes(registroRequest.getPermissoes());
 
         usuarioRepository.save(usuario);
