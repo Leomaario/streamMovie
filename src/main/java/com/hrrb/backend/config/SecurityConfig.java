@@ -70,6 +70,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
 
+
+
                         // Rotas de LÍDER e ADMIN (gerir vídeos e catálogos)
                         .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                         .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
@@ -80,7 +82,8 @@ public class SecurityConfig {
 
 
                         // Rotas que QUALQUER usuário logado pode acessar (ver conteúdo)
-                        .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**", "/api/certificados/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**",
+                                "/api/certificados/**", "/api/progresso/**").authenticated()
 
                         // Qualquer outra requisição que sobrar, precisa estar autenticado
                         .anyRequest().authenticated()

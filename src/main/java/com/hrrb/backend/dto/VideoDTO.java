@@ -2,8 +2,10 @@ package com.hrrb.backend.dto;
 
 import com.hrrb.backend.model.Video;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class VideoDTO {
 
     //Informações que o front precisa
@@ -11,8 +13,6 @@ public class VideoDTO {
     private String titulo;
     private String descricao;
     private Integer duracaoSegundos;
-
-    // Em vez do objeto Catalogo inteiro, a gente manda só o nome e o ID dele
     private Long catalogoId;
     private String catalogoNome;
 

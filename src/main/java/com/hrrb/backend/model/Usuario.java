@@ -1,17 +1,24 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "usuarios")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario {
+
+
+    @OneToMany(mappedBy = "usuario")
+    @JsonIgnore // Evita loops infinitos ao converter para JSON
+    private List<Certificado> certificados;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
