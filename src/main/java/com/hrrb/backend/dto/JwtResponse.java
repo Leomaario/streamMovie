@@ -1,11 +1,10 @@
 package com.hrrb.backend.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List; // Adicione este import
 
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class JwtResponse {
     private String token;
@@ -13,11 +12,14 @@ public class JwtResponse {
     private Long id;
     private String usuario;
     private String email;
+    private List<String> roles; // <<< O campo que faltava
 
-    public JwtResponse(String jwt, Long id, String username, String email) {
-            this.token = jwt; // Atribui o token recebido ao campo 'token'
-            this.id = id;
-            this.usuario = username; // Atribui o 'username' recebido ao campo 'usuario'
-            this.email = email;
+    // O construtor agora aceita a lista de permissões
+    public JwtResponse(String jwt, Long id, String username, String email, List<String> roles) {
+        this.token = jwt;
+        this.id = id;
+        this.usuario = username;
+        this.email = email;
+        this.roles = roles;
     }
 }

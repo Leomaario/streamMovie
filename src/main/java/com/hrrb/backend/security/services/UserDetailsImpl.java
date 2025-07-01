@@ -7,16 +7,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-// Esta classe "traduz" nosso objeto Usuario para um formato que o Spring Security entende.
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private String username; // No Spring Security, o nome de usuário é sempre 'username'
+    private String username;
     private String email;
 
     @JsonIgnore
@@ -33,17 +32,19 @@ public class UserDetailsImpl implements UserDetails {
         this.authorities = authorities;
     }
 
-    // Método que constrói um UserDetails a partir do nosso objeto Usuario
+    // --- MÉTODO CORRIGIDO ---
     public static UserDetailsImpl build(Usuario usuario) {
-        // Por enquanto, a permissão é fixa. No futuro, pegaremos do campo 'permissoes'.
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        // Pega a string de permissão do banco (ex: "ADMIN") e a transforma em
+        // um objeto que o Spring Security entende (ex: "ROLE_ADMIN").
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + usuario.getPermissoes().toUpperCase());
 
         return new UserDetailsImpl(
                 usuario.getId(),
-                usuario.getUsuario(), // O campo 'usuario' do nosso model vira o 'username' aqui
+                usuario.getUsuario(),
                 usuario.getEmail(),
                 usuario.getSenha(),
-                authorities);
+                Collections.singletonList(authority) // Usa a permissão real do utilizador
+        );
     }
 
     @Override
@@ -69,7 +70,6 @@ public class UserDetailsImpl implements UserDetails {
         return username;
     }
 
-    // Os métodos abaixo podem ser customizados para bloquear contas, etc.
     @Override
     public boolean isAccountNonExpired() { return true; }
 

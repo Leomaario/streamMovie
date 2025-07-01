@@ -1,11 +1,17 @@
 package com.hrrb.backend.controller;
 
-
 import com.hrrb.backend.dto.JwtResponse;
 import com.hrrb.backend.dto.LoginRequest;
+import com.hrrb.backend.dto.MessageResponse;
+import com.hrrb.backend.dto.RegistroRequest;
+import com.hrrb.backend.model.Grupo;
+import com.hrrb.backend.model.Usuario;
+import com.hrrb.backend.repository.GrupoRepository;
+import com.hrrb.backend.repository.UsuarioRepository;
 import com.hrrb.backend.security.jwt.JwtUtils;
 import com.hrrb.backend.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,35 +37,50 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    UsuarioRepository usuarioRepository;
 
+    @Autowired
+    GrupoRepository grupoRepository; // <<< Injetado para buscar o grupo
+
+    // O seu método de login está correto, apenas garanti que ele envia as permissões
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-
-        // 1. O Spring Security tenta autenticar o usuário com os dados fornecidos
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsuario(), loginRequest.getSenha()));
-
-        // 2. Se a autenticação deu certo, "loga" o usuário na sessão atual
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // 3. Gera o "crachá digital" (token JWT)
         String jwt = jwtUtils.generateJwtToken(authentication);
-
-        // 4. Pega os detalhes do usuário para retornar na resposta
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        // 5. Devolve o token e os dados do usuário para o frontend
-        // A chamada aqui agora corresponde exatamente ao construtor da JwtResponse.
-        return ResponseEntity.ok(new JwtResponse(jwt,
-                userDetails.getId(),
-                userDetails.getUsername(), // getUsername() retorna o campo 'usuario'
-                userDetails.getEmail()));
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
     }
 
-    @PostMapping("/registrar")
-    public ResponseEntity<?> registerUser (/* @RequestBody RegisterRequest registerRequest */){
-        return ResponseEntity.ok("Endpoint de registro funcionando ! :D");
-    }
+    @PostMapping(value = "/registrar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> registerUser(@RequestBody RegistroRequest registroRequest) {
+        if (usuarioRepository.existsByUsuario(registroRequest.getUsuario())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Erro: Nome de usuário já está em uso!"));
+        }
+        if (usuarioRepository.existsByEmail(registroRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Erro: Email já está em uso!"));
+        }
 
+        // --- LÓGICA DE GRUPO CORRIGIDA ---
+        // Busca o objeto Grupo no banco a partir do nome do grupo que veio do formulário
+        Grupo grupo = grupoRepository.findByNome(registroRequest.getGrupo())
+                .orElseThrow(() -> new RuntimeException("Erro: Grupo '" + registroRequest.getGrupo() + "' não encontrado."));
+
+        Usuario usuario = new Usuario();
+        usuario.setNome(registroRequest.getNome());
+        usuario.setUsuario(registroRequest.getUsuario());
+        usuario.setEmail(registroRequest.getEmail());
+        usuario.setSenha(encoder.encode(registroRequest.getSenha()));
+        usuario.setGrupo(grupo); // Associa o objeto Grupo encontrado, e não mais uma String
+        usuario.setPermissoes(registroRequest.getPermissoes());
+
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(new MessageResponse("Usuário registrado com sucesso!"));
+    }
 }
-

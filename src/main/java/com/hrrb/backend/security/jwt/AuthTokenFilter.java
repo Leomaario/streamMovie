@@ -12,12 +12,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Este é o nosso "guarda"
+@Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -28,53 +29,57 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
-    // Este é o método principal que faz a verificação
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        logger.info("==================== INÍCIO DO FILTRO ====================");
+        logger.info("A processar requisição para: {}", request.getRequestURI());
+
         try {
-            // 1. Tenta extrair o token da requisição
             String jwt = parseJwt(request);
 
-            // 2. Se o token existir e for válido...
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                // 3. ...extrai o nome de usuário do token
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+            if (jwt == null) {
+                logger.warn("Token JWT não encontrado no cabeçalho Authorization.");
+            } else {
+                logger.info("Token JWT encontrado: {}", jwt);
 
-                // 4. ...carrega os detalhes do usuário do banco de dados
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                boolean isTokenValid = jwtUtils.validateJwtToken(jwt);
+                logger.info("O token é válido? {}", isTokenValid);
 
-                // 5. ...cria um objeto de autenticação
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null, // Não precisamos das credenciais (senha), pois já validamos pelo token
-                                userDetails.getAuthorities());
+                if (isTokenValid) {
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                    logger.info("Nome de utilizador extraído do token: {}", username);
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    logger.info("UserDetails carregado para o utilizador: {}", userDetails.getUsername());
 
-                // 6. ...e finalmente, "autentica" o usuário no contexto de segurança do Spring
-                // A partir daqui, o Spring sabe que o usuário está logado para esta requisição
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("!!! Utilizador {} autenticado com sucesso no contexto de segurança. Permissões: {}", username, userDetails.getAuthorities());
+                }
             }
         } catch (Exception e) {
-            logger.error("Não foi possível autenticar o usuário: {}", e.getMessage());
+            logger.error("!!! EXCEÇÃO no AuthTokenFilter: {}", e.getMessage(), e);
         }
 
-        // 7. Passa a requisição para o próximo filtro na cadeia
+        logger.info("A passar a requisição para o próximo filtro na cadeia...");
+        logger.info("==================== FIM DO FILTRO ====================");
         filterChain.doFilter(request, response);
     }
 
-    // Método auxiliar para extrair o token do cabeçalho "Authorization"
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
-
-        // Verifica se o cabeçalho existe e começa com "Bearer "
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            // Retorna apenas a string do token (remove o "Bearer ")
             return headerAuth.substring(7);
         }
-
         return null;
     }
 }
