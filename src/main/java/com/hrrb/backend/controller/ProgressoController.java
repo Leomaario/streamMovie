@@ -8,11 +8,13 @@ import com.hrrb.backend.repository.ProgressoUsuarioVideoRepository;
 import com.hrrb.backend.repository.UsuarioRepository;
 import com.hrrb.backend.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/progresso")
@@ -28,7 +30,7 @@ public class ProgressoController {
     @Autowired
     private VideoRepository videoRepository;
 
-    @PostMapping("/{videoId}/marcar-concluido")
+    @PostMapping(value = "/{videoId}/marcar-concluido", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> marcarVideoComoConcluido(
             @PathVariable Long videoId,
             Authentication authentication) {
@@ -58,5 +60,24 @@ public class ProgressoController {
         progressoRepository.save(progresso);
 
         return ResponseEntity.ok(new MessageResponse("Vídeo marcado como concluído com sucesso!"));
+    }
+
+    @GetMapping("/{videoId}/status")
+    public ResponseEntity<?> getProgressoStatus(
+            @PathVariable Long videoId,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        Usuario usuario = usuarioRepository.findByUsuario(username)
+                .orElseThrow(() -> new RuntimeException("Erro: Utilizador não encontrado."));
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("Erro: Vídeo não encontrado."));
+
+        boolean concluido = progressoRepository.findByUsuarioAndVideo(usuario, video)
+                .map(ProgressoUsuarioVideo::isConcluido)
+                .orElse(false);
+
+        // Retorna um Map simples que será convertido para JSON
+        return ResponseEntity.ok(Map.of("concluido", concluido));
     }
 }

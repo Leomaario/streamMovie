@@ -1,92 +1,95 @@
-package com.hrrb.backend.controller; // Adapte o nome do seu pacote
+package com.hrrb.backend.controller;
 
+import com.hrrb.backend.dto.UpdateUsuarioRequest;
+import com.hrrb.backend.dto.UsuarioDTO;
+import com.hrrb.backend.model.Grupo;
 import com.hrrb.backend.model.Usuario;
+import com.hrrb.backend.repository.GrupoRepository;
 import com.hrrb.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/usuarios") // URL base para a API de usuários
+@RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
 public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // --- 1. CREATE (Criar um novo usuário) ---
-    @PostMapping
-    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario novoUsuario) {
-        try {
-            // Em um sistema real, aqui entraria a lógica para criptografar a senha
-            // antes de salvar: novoUsuario.setSenha(passwordEncoder.encode(novoUsuario.getSenha()));
-            Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
-            return new ResponseEntity<>(usuarioSalvo, HttpStatus.CREATED);
-        } catch (Exception e) {
-            // Pode dar erro se o email já existir, por exemplo (por causa do 'UNIQUE' no banco)
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    @Autowired
+    private GrupoRepository grupoRepository;
 
-    // --- 2. READ (Listar todos os usuários) ---
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // --- READ (Listar todos os usuários) ---
+    // Retorna uma lista de DTOs, e não a entidade completa, para não expor a senha.
     @GetMapping
-    public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
+    public ResponseEntity<List<UsuarioDTO>> listarTodosUsuarios() {
+        // 1. Busca a lista completa de entidades Usuario do banco
         List<Usuario> usuarios = usuarioRepository.findAll();
-        if (usuarios.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(usuarios, HttpStatus.OK);
+
+        // 2. A linha mágica: transforma cada objeto Usuario em um objeto UsuarioDTO
+        List<UsuarioDTO> dtos = usuarios.stream()
+                .map(UsuarioDTO::new)
+                .collect(Collectors.toList());
+
+        // 3. Devolve a lista de DTOs, que o frontend saberá como ler
+        return ResponseEntity.ok(dtos);
     }
 
-    // --- 3. READ (Buscar um usuário pelo ID) ---
+    // --- READ (Buscar um usuário pelo ID) ---
+    // Também retorna um DTO seguro.
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioDTO> buscarUsuarioPorId(@PathVariable Long id) {
         return usuarioRepository.findById(id)
-                .map(usuario -> ResponseEntity.ok(usuario))
+                .map(usuario -> ResponseEntity.ok(new UsuarioDTO(usuario)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- 4. UPDATE (Atualizar um usuário existente) ---
+    // --- UPDATE (Atualizar um usuário existente) ---
+    // Recebe um DTO específico para a atualização e retorna um DTO de resposta.
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetalhes) {
-        Optional<Usuario> usuarioData = usuarioRepository.findById(id);
+    public ResponseEntity<UsuarioDTO> atualizarUsuario(@PathVariable Long id, @RequestBody UpdateUsuarioRequest request) {
+        return usuarioRepository.findById(id)
+                .map(usuarioExistente -> {
+                    Grupo grupo = grupoRepository.findByNome(request.getGrupo())
+                            .orElseThrow(() -> new RuntimeException("Erro: Grupo não encontrado."));
 
-        if (usuarioData.isPresent()) {
-            Usuario _usuario = usuarioData.get();
-            _usuario.setNome(usuarioDetalhes.getNome());
-            _usuario.setEmail(usuarioDetalhes.getEmail());
-            _usuario.setGrupo(usuarioDetalhes.getGrupo());
-            _usuario.setPermissoes(usuarioDetalhes.getPermissoes());
-            _usuario.setFotoPerfilPath(usuarioDetalhes.getFotoPerfilPath());
+                    usuarioExistente.setNome(request.getNome());
+                    usuarioExistente.setEmail(request.getEmail());
+                    usuarioExistente.setPermissoes(request.getPermissoes());
+                    usuarioExistente.setGrupo(grupo);
 
-            // Lógica para não atualizar a senha se ela vier vazia no pedido
-            if (usuarioDetalhes.getSenha() != null && !usuarioDetalhes.getSenha().isEmpty()) {
-                // Novamente, aqui entraria a criptografia
-                _usuario.setSenha(usuarioDetalhes.getSenha());
-            }
+                    // Apenas atualiza a senha se uma nova for fornecida
+                    if (request.getSenha() != null && !request.getSenha().trim().isEmpty()) {
+                        usuarioExistente.setSenha(passwordEncoder.encode(request.getSenha()));
+                    }
 
-            return new ResponseEntity<>(usuarioRepository.save(_usuario), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                    Usuario usuarioSalvo = usuarioRepository.save(usuarioExistente);
+                    return ResponseEntity.ok(new UsuarioDTO(usuarioSalvo));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- 5. DELETE (Deletar um usuário) ---
+    // --- DELETE (Deletar um usuário) ---
+    // A lógica de apagar continua segura.
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deletarUsuario(@PathVariable Long id) {
-        try {
-            if (!usuarioRepository.existsById(id)) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            usuarioRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            // Pode dar erro se o usuário tiver "links" em outras tabelas (certificados, etc.)
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> deletarUsuario(@PathVariable Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
         }
+        usuarioRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
+
+    // NOTA: O método de CRIAR usuário (com criptografia) já está corretamente no seu AuthController.
+    // Manter a criação de usuários na rota /api/auth/registrar é uma boa prática.
 }
