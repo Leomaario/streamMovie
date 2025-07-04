@@ -1,12 +1,14 @@
 package com.hrrb.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -14,6 +16,11 @@ import java.util.Set;
 @Table(name = "catalogos")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Catalogo {
+
+
+    @OneToMany(mappedBy = "catalogo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Video> videos;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

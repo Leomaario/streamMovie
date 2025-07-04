@@ -21,7 +21,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        System.out.println(">>> Configurando MessageConverters...");
         converters.add(new MappingJackson2HttpMessageConverter());
         converters.add(new ResourceHttpMessageConverter());
+        System.out.println(">>> Conversores de JSON e Resource ADICIONADOS.");
     }
 }

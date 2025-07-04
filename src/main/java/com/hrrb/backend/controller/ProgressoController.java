@@ -1,6 +1,7 @@
 package com.hrrb.backend.controller;
 
 import com.hrrb.backend.dto.MessageResponse;
+import com.hrrb.backend.dto.VideoDTO;
 import com.hrrb.backend.model.ProgressoUsuarioVideo;
 import com.hrrb.backend.model.Usuario;
 import com.hrrb.backend.model.Video;
@@ -8,13 +9,14 @@ import com.hrrb.backend.repository.ProgressoUsuarioVideoRepository;
 import com.hrrb.backend.repository.UsuarioRepository;
 import com.hrrb.backend.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/progresso")
@@ -30,38 +32,37 @@ public class ProgressoController {
     @Autowired
     private VideoRepository videoRepository;
 
-    @PostMapping(value = "/{videoId}/marcar-concluido", produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Marca um vídeo como concluído para o utilizador autenticado.
+     */
+    @PostMapping("/{videoId}/marcar-concluido")
     public ResponseEntity<?> marcarVideoComoConcluido(
             @PathVariable Long videoId,
             Authentication authentication) {
 
-        // 1. Pega o nome do utilizador a partir do token de autenticação
         String username = authentication.getName();
-
-        // 2. Busca o objeto Usuario completo
         Usuario usuario = usuarioRepository.findByUsuario(username)
                 .orElseThrow(() -> new RuntimeException("Erro: Utilizador não encontrado."));
-
-        // 3. Busca o objeto Video completo
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new RuntimeException("Erro: Vídeo não encontrado."));
 
-        // 4. Verifica se já existe um registo de progresso. Se não existir, cria um novo.
         ProgressoUsuarioVideo progresso = progressoRepository.findByUsuarioAndVideo(usuario, video)
                 .orElse(new ProgressoUsuarioVideo());
 
-        // 5. Atualiza os dados do progresso
         progresso.setUsuario(usuario);
         progresso.setVideo(video);
         progresso.setConcluido(true);
         progresso.setDataConclusao(LocalDateTime.now());
 
-        // 6. Salva o progresso (seja novo ou atualizado) no banco
         progressoRepository.save(progresso);
 
-        return ResponseEntity.ok(new MessageResponse("Vídeo marcado como concluído com sucesso!"));
+        // Devolve uma resposta 200 OK com corpo vazio para evitar erros de serialização
+        return ResponseEntity.ok().build();
     }
 
+    /**
+     * Verifica o status de conclusão de um vídeo para o utilizador autenticado.
+     */
     @GetMapping("/{videoId}/status")
     public ResponseEntity<?> getProgressoStatus(
             @PathVariable Long videoId,
@@ -77,7 +78,23 @@ public class ProgressoController {
                 .map(ProgressoUsuarioVideo::isConcluido)
                 .orElse(false);
 
-        // Retorna um Map simples que será convertido para JSON
         return ResponseEntity.ok(Map.of("concluido", concluido));
+    }
+
+    /**
+     * Retorna uma lista de todos os vídeos marcados como concluídos pelo utilizador autenticado.
+     */
+    @GetMapping("/meus-concluidos")
+    public ResponseEntity<List<VideoDTO>> getMeusCursosConcluidos(Authentication authentication) {
+        String username = authentication.getName();
+        Usuario usuario = usuarioRepository.findByUsuario(username)
+                .orElseThrow(() -> new RuntimeException("Erro: Utilizador não encontrado."));
+
+        List<VideoDTO> cursosConcluidos = progressoRepository.findByUsuarioAndConcluido(usuario, true)
+                .stream()
+                .map(progresso -> new VideoDTO(progresso.getVideo()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(cursosConcluidos);
     }
 }

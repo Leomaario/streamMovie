@@ -1,5 +1,6 @@
 package com.hrrb.backend.controller;
 
+import com.hrrb.backend.dto.CatalogoDTO;
 import com.hrrb.backend.dto.VideoDTO;
 import com.hrrb.backend.model.Catalogo;
 import com.hrrb.backend.repository.CatalogoRepository;
@@ -19,14 +20,23 @@ public class CatalogoController {
     @Autowired
     private CatalogoRepository catalogoRepository;
 
-    // --- DEPENDÊNCIA ADICIONADA ---
-    // Precisamos do repositório de vídeos para buscar a playlist
     @Autowired
     private VideoRepository videoRepository;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CatalogoDTO> buscarCatalogoPorId(@PathVariable Long id) {
+        return catalogoRepository.findById(id)
+                .map(catalogo -> ResponseEntity.ok(new CatalogoDTO(catalogo)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping
-    public List<Catalogo> listarTodasOsCatalogos(){
-        return catalogoRepository.findAll();
+    public ResponseEntity<List<CatalogoDTO>> listarTodosCatalogos() {
+        List<CatalogoDTO> dtos = catalogoRepository.findAll()
+                .stream()
+                .map(CatalogoDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping
@@ -42,7 +52,7 @@ public class CatalogoController {
                 .map(catalogoExistente -> {
                     catalogoExistente.setNome(catalogoDetalhes.getNome());
                     catalogoExistente.setDescricao(catalogoDetalhes.getDescricao());
-                    // Adicionei os outros campos que você tinha
+
                     catalogoExistente.setIcone(catalogoDetalhes.getIcone());
                     catalogoExistente.setTag(catalogoDetalhes.getTag());
                     catalogoExistente.setCaminhoPasta(catalogoDetalhes.getCaminhoPasta());

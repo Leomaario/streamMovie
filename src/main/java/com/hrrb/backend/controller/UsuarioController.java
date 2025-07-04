@@ -33,15 +33,10 @@ public class UsuarioController {
     // Retorna uma lista de DTOs, e não a entidade completa, para não expor a senha.
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> listarTodosUsuarios() {
-        // 1. Busca a lista completa de entidades Usuario do banco
-        List<Usuario> usuarios = usuarioRepository.findAll();
-
-        // 2. A linha mágica: transforma cada objeto Usuario em um objeto UsuarioDTO
-        List<UsuarioDTO> dtos = usuarios.stream()
+        List<UsuarioDTO> dtos = usuarioRepository.findAll()
+                .stream()
                 .map(UsuarioDTO::new)
                 .collect(Collectors.toList());
-
-        // 3. Devolve a lista de DTOs, que o frontend saberá como ler
         return ResponseEntity.ok(dtos);
     }
 

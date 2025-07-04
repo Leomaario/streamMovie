@@ -81,9 +81,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
 
 
+
                         // Rotas que QUALQUER usuário logado pode acessar (ver conteúdo)
                         .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**",
-                                "/api/certificados/**", "/api/progresso/**").authenticated()
+                                "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**").authenticated()
 
                         // Qualquer outra requisição que sobrar, precisa estar autenticado
                         .anyRequest().authenticated()

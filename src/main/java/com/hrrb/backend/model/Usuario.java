@@ -1,7 +1,9 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,10 +17,22 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario {
 
+    //************************************************//
 
     @OneToMany(mappedBy = "usuario")
     @JsonIgnore // Evita loops infinitos ao converter para JSON
     private List<Certificado> certificados;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonManagedReference("usuario-progressos")
+    private List<ProgressoUsuarioVideo> progressos;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "grupo_id", nullable = false)
+    @JsonBackReference("grupo-usuarios")
+    private Grupo grupo;
+
+    //************************************************//
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,9 +56,6 @@ public class Usuario {
     @Column(name = "foto_perfil_path")
     private String fotoPerfilPath;
 
-    @ManyToOne // Dizendo que Muitos Usuários podem pertencer a Um Grupo
-    @JoinColumn(name = "grupo_id", nullable = false) // Mapeando para a coluna de chave estrangeira
-    private Grupo grupo;
 
     // CORREÇÃO 2: Este campo agora mapeia para a coluna "permissoes", não "usuario"
     @Column(name = "permissoes", nullable = false)

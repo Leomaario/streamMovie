@@ -1,6 +1,8 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -13,6 +15,9 @@ import java.time.LocalDateTime;
 @Table(name = "videos")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // <<<--- ADICIONE ESTA LINHA AQUI
 public class Video {
+
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,6 +45,7 @@ public class Video {
     //@JoinColumn(name = "catalogo_id"): Diz ao JPA que a coluna catalogo_id na tabela videos é a chave estrangeira que "linka" este vídeo ao seu catálogo pai.
     @ManyToOne(fetch = FetchType.LAZY) //Muitos videos podem pertencer a um catalogo
     @JoinColumn(name = "catalogo_id", nullable = false)
+    @JsonBackReference
     private Catalogo catalogo;
 
     //COLUNAS DE DATA GERENCIADAS PELO HIBERNATE

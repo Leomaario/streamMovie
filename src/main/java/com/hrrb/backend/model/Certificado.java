@@ -1,5 +1,6 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -37,6 +38,7 @@ public class Certificado {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "catalogo_id")
     @JsonIgnore
+    @JsonBackReference("usuario-certificados")
     private Catalogo catalogo;
 
     // Colunas de data automáticas

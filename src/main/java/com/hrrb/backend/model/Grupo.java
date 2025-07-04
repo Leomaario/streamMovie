@@ -1,7 +1,9 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.List;
 
 @Data
 @Entity
@@ -17,5 +19,9 @@ public class Grupo {
 
     @Column(nullable = true)
     private String descricao;
+
+    @OneToMany(mappedBy = "grupo")
+    @JsonManagedReference("grupo-usuarios") // Adicionando referência para a lista de usuários
+    private List<Usuario> usuarios;
 
 }

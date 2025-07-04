@@ -1,5 +1,6 @@
 package com.hrrb.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,11 +19,13 @@ public class ProgressoUsuarioVideo {
     // Relação: Muitos progressos pertencem a UM Utilizador
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonBackReference("usuario-progressos") // <<< ANOTAÇÃO ADICIONADA
     private Usuario usuario;
 
     // Relação: Muitos progressos (de diferentes utilizadores) podem ser sobre UM Vídeo
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "video_id", nullable = false)
+    @JsonBackReference("video-progressos")
     private Video video;
 
     @Column(nullable = false)
