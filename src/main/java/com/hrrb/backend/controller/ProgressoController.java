@@ -96,5 +96,8 @@ public class ProgressoController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(cursosConcluidos);
+
+
+
     }
 }

@@ -1,6 +1,7 @@
 package com.hrrb.backend.controller;
 
 import com.hrrb.backend.dto.VideoDTO;
+import com.hrrb.backend.model.Catalogo;
 import com.hrrb.backend.model.Video;
 import com.hrrb.backend.repository.CatalogoRepository;
 import com.hrrb.backend.repository.VideoRepository;
@@ -9,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource; // IMPORTAÇÃO CORRIGIDA
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-        import org.springframework.web.bind.annotation.*;
-        import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.hrrb.backend.dto.UpdateVideoRequest;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,11 +72,19 @@ public class VideoController {
 
     // PUT /api/videos/{id} - Atualiza os detalhes de um vídeo
     @PutMapping("/{id}")
-    public ResponseEntity<VideoDTO> atualizarVideo(@PathVariable Long id, @RequestBody Video videoDetalhes) {
+    public ResponseEntity<VideoDTO> atualizarVideo(
+            @PathVariable Long id,
+            @RequestBody UpdateVideoRequest request) {
         return videoRepository.findById(id)
                 .map(videoExistente -> {
-                    videoExistente.setTitulo(videoDetalhes.getTitulo());
-                    videoExistente.setDescricao(videoDetalhes.getDescricao());
+                    // Busca o novo catálogo no banco a partir do ID recebido
+                    Catalogo novoCatalogo = catalogoRepository.findById(request.getCatalogoId())
+                            .orElseThrow(() -> new RuntimeException("Erro: Catálogo de destino não encontrado."));
+
+                    videoExistente.setTitulo(request.getTitulo());
+                    videoExistente.setDescricao(request.getDescricao());
+                    videoExistente.setCatalogo(novoCatalogo); // Associa o novo objeto Catalogo
+
                     Video videoSalvo = videoRepository.save(videoExistente);
                     return ResponseEntity.ok(new VideoDTO(videoSalvo));
                 })

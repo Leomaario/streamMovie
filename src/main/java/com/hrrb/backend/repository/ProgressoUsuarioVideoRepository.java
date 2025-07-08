@@ -11,13 +11,16 @@ import java.util.Optional;
 
 @Repository
 public interface ProgressoUsuarioVideoRepository extends JpaRepository<ProgressoUsuarioVideo, Long> {
-    
-    
-    Optional<ProgressoUsuarioVideo> findByUsuarioAndVideo(Usuario usuario, Video video);
 
+
+    Optional<ProgressoUsuarioVideo> findByUsuarioAndVideo(Usuario usuario, Video video);
     List<ProgressoUsuarioVideo> findByUsuarioAndConcluido(Usuario usuario, boolean concluido);
-    
-    
-    
+
+    long countByUsuario(Usuario usuario);
+    long countByUsuarioAndConcluido(Usuario usuario, boolean concluido);
+    List<ProgressoUsuarioVideo> findByUsuario(Usuario usuario);
+
+
+
 
 }
