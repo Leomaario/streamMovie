@@ -25,8 +25,12 @@ public class UsuarioDTO {
         this.nome = usuario.getNome();
         this.usuario = usuario.getUsuario();
         this.email = usuario.getEmail();
-        this.grupo = usuario.getGrupo() != null ? usuario.getGrupo().getNome() : null;
         this.permissoes = usuario.getPermissoes();
         this.dataCriacao = usuario.getDataCriacao();
+        if (usuario.getGrupo() != null) {
+            this.grupo = usuario.getGrupo().getNome();
+        } else {
+            this.grupo = "Sem Grupo"; // Ou null, se preferir
+        }
     }
     }

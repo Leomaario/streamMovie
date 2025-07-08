@@ -84,7 +84,7 @@ public class SecurityConfig {
 
                         // Rotas que QUALQUER usuário logado pode acessar (ver conteúdo)
                         .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**",
-                                "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**").authenticated()
+                                "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**", "/api/profile/**").authenticated()
 
                         // Qualquer outra requisição que sobrar, precisa estar autenticado
                         .anyRequest().authenticated()
