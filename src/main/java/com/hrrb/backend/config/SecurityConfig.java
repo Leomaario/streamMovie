@@ -31,11 +31,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // Injeta o nosso tratador de erros de autenticação
+
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    // Injeta o nosso filtro JWT (que já é um @Component)
     @Autowired
     private AuthTokenFilter authTokenFilter;
 
