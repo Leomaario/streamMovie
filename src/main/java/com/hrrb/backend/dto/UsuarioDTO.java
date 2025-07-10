@@ -15,9 +15,7 @@ public class UsuarioDTO {
     private String grupo;
     private String permissoes;
     private LocalDateTime dataCriacao;
-
     public UsuarioDTO(){
-
     }
 
     public UsuarioDTO(Usuario usuario) {
