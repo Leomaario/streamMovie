@@ -6,5 +6,7 @@ import lombok.Data;
 public class UpdateVideoRequest {
     private String titulo;
     private String descricao;
+    private Integer duracaoSegundos;
+    private String urlDoVideo;
     private Long catalogoId;
 }

@@ -1,60 +1,61 @@
 package com.hrrb.backend.controller;
 
+import com.hrrb.backend.dto.UpdateVideoRequest;
 import com.hrrb.backend.dto.VideoDTO;
 import com.hrrb.backend.model.Catalogo;
 import com.hrrb.backend.model.Video;
 import com.hrrb.backend.repository.CatalogoRepository;
 import com.hrrb.backend.repository.VideoRepository;
-import com.hrrb.backend.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource; // IMPORTAÇÃO CORRIGIDA
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.hrrb.backend.dto.UpdateVideoRequest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/videos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Para desenvolvimento. Em produção, restrinja para a URL do seu frontend.
 public class VideoController {
 
     @Autowired
     private VideoRepository videoRepository;
+
     @Autowired
     private CatalogoRepository catalogoRepository;
-    @Autowired
-    private FileStorageService fileStorageService;
 
-    // POST /api/videos - Cria um novo vídeo com upload de ficheiro
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<VideoDTO> uploadAndCreateVideo(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("titulo") String titulo,
-            @RequestParam("descricao") String descricao,
-            @RequestParam("catalogoId") Long catalogoId) {
+    // REMOVIDO: A dependência do FileStorageService não é mais necessária.
+    // @Autowired
+    // private FileStorageService fileStorageService;
 
-        return catalogoRepository.findById(catalogoId)
+
+    // MUDANÇA: O endpoint de criação agora recebe um JSON simples, não mais um arquivo.
+    @PostMapping
+    public ResponseEntity<VideoDTO> createVideo(@RequestBody VideoDTO videoRequest) {
+        // Busca o catálogo pelo ID fornecido no DTO
+        return catalogoRepository.findById(videoRequest.getCatalogoId())
                 .map(catalogo -> {
-                    String caminhoArquivo = fileStorageService.storeFile(file, catalogoId);
+                    // Cria a nova entidade Video
                     Video novoVideo = new Video();
-                    novoVideo.setTitulo(titulo);
-                    novoVideo.setDescricao(descricao);
+                    novoVideo.setTitulo(videoRequest.getTitulo());
+                    novoVideo.setDescricao(videoRequest.getDescricao());
+                    // Define a URL do vídeo recebida do frontend
+                    novoVideo.setUrlDoVideo(videoRequest.getUrlDoVideo());
                     novoVideo.setCatalogo(catalogo);
-                    novoVideo.setCaminhoArquivo(caminhoArquivo);
+
+                    // Salva o vídeo no banco de dados
                     Video videoSalvo = videoRepository.save(novoVideo);
+
+                    // Retorna o DTO do vídeo criado
                     return new ResponseEntity<>(new VideoDTO(videoSalvo), HttpStatus.CREATED);
                 })
+                // Se o catálogo não for encontrado, retorna um erro.
                 .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
     }
 
-    // GET /api/videos - Lista todos os vídeos
+
+    // GET /api/videos - Lista todos os vídeos (Nenhuma mudança necessária aqui)
     @GetMapping
     public ResponseEntity<List<VideoDTO>> listarTodosVideos() {
         List<Video> videos = videoRepository.findAll();
@@ -62,7 +63,8 @@ public class VideoController {
         return ResponseEntity.ok(videoDTOs);
     }
 
-    // GET /api/videos/buscar/{id} - Busca um vídeo específico pelo ID
+
+    // GET /api/videos/buscar/{id} - Busca um vídeo específico (Nenhuma mudança necessária aqui)
     @GetMapping("/buscar/{id}")
     public ResponseEntity<VideoDTO> buscarVideoPorId(@PathVariable Long id) {
         return videoRepository.findById(id)
@@ -70,20 +72,25 @@ public class VideoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // PUT /api/videos/{id} - Atualiza os detalhes de um vídeo
+
+    // MUDANÇA: O endpoint de atualização agora também pode alterar a URL do vídeo.
     @PutMapping("/{id}")
     public ResponseEntity<VideoDTO> atualizarVideo(
             @PathVariable Long id,
-            @RequestBody UpdateVideoRequest request) {
+            @RequestBody UpdateVideoRequest request) { // Assumindo que UpdateVideoRequest agora tem o campo 'urlDoVideo'
+
         return videoRepository.findById(id)
                 .map(videoExistente -> {
-                    // Busca o novo catálogo no banco a partir do ID recebido
                     Catalogo novoCatalogo = catalogoRepository.findById(request.getCatalogoId())
                             .orElseThrow(() -> new RuntimeException("Erro: Catálogo de destino não encontrado."));
 
                     videoExistente.setTitulo(request.getTitulo());
                     videoExistente.setDescricao(request.getDescricao());
-                    videoExistente.setCatalogo(novoCatalogo); // Associa o novo objeto Catalogo
+                    videoExistente.setCatalogo(novoCatalogo);
+                    // Adicionada a lógica para atualizar a URL do vídeo, se ela for fornecida.
+                    if (request.getUrlDoVideo() != null && !request.getUrlDoVideo().isEmpty()) {
+                        videoExistente.setUrlDoVideo(request.getUrlDoVideo());
+                    }
 
                     Video videoSalvo = videoRepository.save(videoExistente);
                     return ResponseEntity.ok(new VideoDTO(videoSalvo));
@@ -91,45 +98,19 @@ public class VideoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/videos/{id} - Apaga um vídeo
+
+    // MUDANÇA: Lógica de apagar arquivo removida, pois não há mais arquivo.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarVideo(@PathVariable Long id) {
         return videoRepository.findById(id)
                 .map(video -> {
-                    // fileStorageService.deleteFile(video.getCaminhoArquivo()); // TODO: Implementar no futuro
                     videoRepository.delete(video);
                     return ResponseEntity.noContent().<Void>build();
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // GET /api/videos/{id}/stream - Faz o streaming do conteúdo de um vídeo
-    @GetMapping("/{id}/stream")
-    public ResponseEntity<Resource> streamVideo(@PathVariable Long id) {
-        Optional<Video> videoData = videoRepository.findById(id);
 
-        if (videoData.isPresent()) {
-            Video video = videoData.get();
-            try {
-                String caminhoArquivo = video.getCaminhoArquivo();
-                Path videoPath = Paths.get(caminhoArquivo);
-
-                // Correção final: Usando FileSystemResource para ler o ficheiro do disco
-                Resource videoResource = new FileSystemResource(videoPath);
-
-                if (videoResource.exists() && videoResource.isReadable()) {
-                    return ResponseEntity.ok()
-                            .contentType(MediaType.valueOf("video/mp4"))
-                            .body(videoResource);
-                } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-                }
-            } catch (Exception e) {
-                System.err.println("Erro ao tentar fazer o streaming do ficheiro: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
+    // REMOVIDO: O endpoint de streaming foi completamente removido.
+    // O streaming agora é responsabilidade do serviço externo (YouTube, Vimeo, etc.).
 }

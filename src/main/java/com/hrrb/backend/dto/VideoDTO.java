@@ -8,20 +8,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VideoDTO {
 
-    //Informações que o front precisa
+
     private Long id;
     private String titulo;
     private String descricao;
     private Integer duracaoSegundos;
+    private String urlDoVideo;
     private Long catalogoId;
     private String catalogoNome;
 
-    // Construtor que transforma um objeto Video (da entidade) em um VideoDTO
     public VideoDTO(Video video){
         this.id = video.getId();
         this.titulo = video.getTitulo();
         this.descricao = video.getDescricao();
         this.duracaoSegundos = video.getDuracaoSegundos();
+        this.urlDoVideo = video.getUrlDoVideo();
+
         if (video.getCatalogo() != null){
             this.catalogoId = video.getCatalogo().getId();
             this.catalogoNome = video.getCatalogo().getNome();
