@@ -54,7 +54,7 @@ public class CatalogoController {
 
                     catalogoExistente.setIcone(catalogoDetalhes.getIcone());
                     catalogoExistente.setTag(catalogoDetalhes.getTag());
-                    catalogoExistente.setCaminhoPasta(catalogoDetalhes.getCaminhoPasta());
+
 
                     Catalogo catalogoAtualizada = catalogoRepository.save(catalogoExistente);
                     return ResponseEntity.ok(catalogoAtualizada);
