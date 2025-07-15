@@ -10,7 +10,6 @@ public class CatalogoDTO {
     private String descricao;
     private String icone;
     private String tag;
-    private String caminhoPasta;
 
     public CatalogoDTO(Catalogo catalogo) {
         this.id = catalogo.getId();
@@ -18,6 +17,5 @@ public class CatalogoDTO {
         this.descricao = catalogo.getDescricao();
         this.icone = catalogo.getIcone();
         this.tag = catalogo.getTag();
-        this.caminhoPasta = catalogo.getCaminhoPasta();
     }
 }

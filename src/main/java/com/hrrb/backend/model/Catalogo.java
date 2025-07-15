@@ -41,10 +41,6 @@ public class Catalogo {
     @Column(name = "posicao_menu")
     private Integer posicaoMenu;
 
-    // <<<--- AQUI A CORREÇÃO! Adicionamos o campo novo ---<<<
-    @Column(name = "caminho_pasta", unique = true)
-    private String caminhoPasta;
-
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
