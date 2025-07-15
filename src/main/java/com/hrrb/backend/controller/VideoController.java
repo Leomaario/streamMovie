@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/videos")
-@CrossOrigin(origins = "*") // Para desenvolvimento. Em produção, restrinja para a URL do seu frontend.
 public class VideoController {
 
     @Autowired

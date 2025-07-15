@@ -11,14 +11,6 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // --- ADICIONE ESTE CONSTRUTOR ---
-    public WebConfig() {
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("!!! O WebConfig FOI CARREGADO PELO SPRING !!!");
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    }
-    // ------------------------------------
-
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         System.out.println(">>> Configurando MessageConverters...");

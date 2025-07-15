@@ -19,7 +19,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user-dashboard")
-@CrossOrigin(origins = "*")
 public class UserDashboardController {
 
     @Autowired

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/progresso")
-@CrossOrigin(origins = "*")
 public class ProgressoController {
 
     @Autowired

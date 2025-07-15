@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/catalogos")
-@CrossOrigin(origins = "*")
 public class CatalogoController {
 
     @Autowired
