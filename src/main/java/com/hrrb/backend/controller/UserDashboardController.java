@@ -28,35 +28,36 @@ public class UserDashboardController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private ProgressoUsuarioVideoRepository progressoUsuarioVideoRepository; // <<< O nome correto
+    private ProgressoUsuarioVideoRepository progressoUsuarioVideoRepository;
 
     @GetMapping("/data")
     public ResponseEntity<?> getDashboardData(Authentication authentication) {
         String currentUserName = authentication.getName();
         Usuario usuario = usuarioRepository.findByUsuario(currentUserName)
                 .orElseThrow(() -> new RuntimeException("Utilizador não encontrado."));
-
-        // --- LÓGICA DE CÁLCULO CORRIGIDA ---
-        // Usando o nome correto da variável: progressoUsuarioVideoRepository
+    
+        // --- LÓGICA DE CÁLCULO DEFENSIVA ---
+    
         long totalDeCursosNaPlataforma = videoRepository.count();
         long totalConcluidos = progressoUsuarioVideoRepository.countByUsuarioAndConcluido(usuario, true);
         long totalIniciados = progressoUsuarioVideoRepository.countByUsuario(usuario);
         long emAndamento = totalIniciados - totalConcluidos;
-
+    
         int mediaConclusao = (totalDeCursosNaPlataforma > 0)
                 ? (int) Math.round(((double) totalConcluidos / totalDeCursosNaPlataforma) * 100)
                 : 0;
-
+    
         Optional<Video> videoDestaqueOpt = videoRepository.findTopByOrderByIdDesc();
-        VideoDTO videoDestaqueDto = videoDestaqueOpt.map(VideoDTO::new).orElse(null);
-
-        Map<String, Object> responseData = Map.of(
-                "cursoEmDestaque", videoDestaqueDto,
-                "totalCursos", totalDeCursosNaPlataforma,
-                "cursosEmAndamento", emAndamento,
-                "mediaConclusao", mediaConclusao
-        );
-
+        VideoDTO videoDestaqueDto = videoDestaqueOpt.map(VideoDTO::new).orElse(null); // Continua seguro, retorna null se não houver vídeo
+    
+        // MUDANÇA PRINCIPAL: Usar um HashMap que aceita valores nulos
+        Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("cursoEmDestaque", videoDestaqueDto); // Agora, mesmo que videoDestaqueDto seja null, não há erro.
+        responseData.put("totalCursos", totalDeCursosNaPlataforma);
+        responseData.put("cursosEmAndamento", emAndamento);
+        responseData.put("mediaConclusao", mediaConclusao);
+        responseData.put("totalConcluidos", totalConcluidos); // Adicionei este para ser útil no frontend
+    
         return ResponseEntity.ok(responseData);
     }
 }
