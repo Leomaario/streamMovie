@@ -97,4 +97,38 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("Usuário registrado com sucesso!"));
     }
+    // Cole este método dentro da sua classe AuthController
+
+    @GetMapping("/setup-admin")
+    public ResponseEntity<?> setupAdmin() {
+        String adminUsername = "admin";
+
+        // 1. Verifica se o usuário 'admin' já existe para não criar duplicados
+        if (usuarioRepository.existsByUsuario(adminUsername)) {
+            return ResponseEntity.ok("Usuário 'admin' já existe.");
+        }
+
+        // 2. Procura pelo grupo "Administradores" (que já criamos no banco)
+        Grupo adminGrupo = grupoRepository.findByNome("Administradores")
+                .orElseThrow(() -> new RuntimeException("Erro Crítico: Grupo 'Administradores' não foi encontrado no banco de dados."));
+
+        // 3. Cria o novo objeto de usuário
+        Usuario admin = new Usuario();
+        admin.setNome("Administrador Principal");
+        admin.setUsuario(adminUsername);
+        admin.setEmail("admin@souzalink.com");
+
+        // 4. IMPORTANTE: Define uma senha e a criptografa com o BCrypt
+        String senhaAdmin = "$2a$12$BffhHO9IVp4H2v4l/U5jA.diYNf1P3WPNN.E8A2I6wPsnz7mgy.qy"; // <-- Anote esta senha!
+        admin.setSenha(encoder.encode(senhaAdmin));
+
+        admin.setGrupo(adminGrupo);
+        admin.setPermissoes("ADMIN");
+
+        // 5. Salva o novo administrador no banco de dados
+        usuarioRepository.save(admin);
+
+        // 6. Retorna uma mensagem de sucesso
+        return ResponseEntity.ok("Usuário 'admin' criado com sucesso! Faça o login com a senha definida no código.");
+    }
 }
