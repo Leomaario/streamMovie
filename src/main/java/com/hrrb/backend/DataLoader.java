@@ -37,7 +37,7 @@ public class DataLoader implements CommandLineRunner {
         }
 
         // --- CRIA O USUÁRIO 'ADMIN' SE NÃO EXISTIR ---
-        String adminUsername = "admin";
+        String adminUsername = "leomario";
         if (usuarioRepository.findByUsuario(adminUsername).isEmpty()) {
             System.out.println(">>> Usuário '" + adminUsername + "' não encontrado. A criar...");
 
@@ -45,12 +45,12 @@ public class DataLoader implements CommandLineRunner {
             Grupo adminGrupo = grupoRepository.findByNome(nomeGrupoAdmin).get();
 
             Usuario admin = new Usuario();
-            admin.setNome("Administrador Principal");
+            admin.setNome("Leomario dos Santos Souza");
             admin.setUsuario(adminUsername);
-            admin.setEmail("admin@souzalink.com");
-            admin.setSenha(encoder.encode("admin123")); // <-- Anote esta senha!
+            admin.setEmail("leomariodev@outlook.com");
+            admin.setSenha(encoder.encode("$2a$12$BffhHO9IVp4H2v4l/U5jA.diYNf1P3WPNN.E8A2I6wPsnz7mgy.qy")); // <-- Anote esta senha!
             admin.setGrupo(adminGrupo);
-            admin.setPermissoes("ROLE_ADMIN");
+            admin.setPermissoes("ADMIN");
 
             usuarioRepository.save(admin);
             System.out.println(">>> Usuário '" + adminUsername + "' criado com sucesso!");
