@@ -16,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,14 +30,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
     @Autowired
     private AuthTokenFilter authTokenFilter;
-
-    // O método @Bean que criava o filtro com 'new' foi REMOVIDO.
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -53,39 +49,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults())
+                .cors(withDefaults()) // Ativa a configuração de CORS definida no Bean 'corsConfigurationSource'
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .securityContext(context -> context.securityContextRepository(new RequestAttributeSecurityContextRepository()))
-
                 .authorizeHttpRequests(authorize -> authorize
-                        // Rotas públicas (login, etc)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Rotas públicas que não precisam de token
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Rotas de ADMIN (ex: gerir usuários)
+                        // Permite que o navegador faça a verificação de CORS (preflight request)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // O resto das suas regras de permissão
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
-
-
-
-                        // Rotas de LÍDER e ADMIN (gerir vídeos e catálogos)
                         .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                         .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                         .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                         .requestMatchers(HttpMethod.POST, "/api/catalogos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**", "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**", "/api/profile/**").authenticated()
 
-
-
-                        // Rotas que QUALQUER usuário logado pode acessar (ver conteúdo)
-                        .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**",
-                                "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**", "/api/profile/**").authenticated()
-
-                        // Qualquer outra requisição que sobrar, precisa estar autenticado
+                        // Qualquer outra requisição precisa de autenticação
                         .anyRequest().authenticated()
                 );
 
@@ -98,15 +85,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // CORREÇÃO: Duas strings separadas na lista
+        // Define as origens permitidas (seu frontend na nuvem e o seu ambiente local)
         configuration.setAllowedOrigins(List.of("https://souzalink-coach.onrender.com", "http://localhost:5173"));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplica esta configuração para todas as rotas que começam com /api/
-        source.registerCorsConfiguration("/api/**", configuration);
+        // Aplica esta configuração a todas as rotas da sua API
+        source.registerCorsConfiguration("/**", configuration);
         return source;
-    }}
+    }
+}
