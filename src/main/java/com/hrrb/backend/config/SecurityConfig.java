@@ -29,7 +29,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
     @Bean

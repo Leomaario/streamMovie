@@ -16,9 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Esta classe trata erros de autenticação para a API REST
-@Component
+@Component("authEntryPointJwt")
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
-
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
     @Override
