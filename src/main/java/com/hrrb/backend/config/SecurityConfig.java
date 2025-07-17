@@ -91,7 +91,7 @@ public class SecurityConfig {
                                 // 4. Rotas de qualquer usuário autenticado
                                 .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**", "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**", "/api/profile/**").authenticated()
 
-                                // 5. A REGRA GERAL "anyRequest" POR ÚLTIMO
+
                                 .anyRequest().authenticated()
                 );
 
