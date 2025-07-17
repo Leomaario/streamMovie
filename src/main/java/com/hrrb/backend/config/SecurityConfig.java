@@ -67,10 +67,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // 1. REGRAS MAIS ESPECÍFICAS PRIMEIRO
-                        // Rotas públicas que não precisam de token
-                        .requestMatchers("/api/auth/**").permitAll()
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/api/auth/**", "/api/auth/login").permitAll()
+                                .anyRequest().authenticated()
 
                         // Rotas de ADMIN
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
@@ -87,7 +86,7 @@ public class SecurityConfig {
 
                         // 2. A REGRA GERAL "anyRequest" POR ÚLTIMO
                         // Qualquer outra requisição precisa de autenticação
-                        .anyRequest().authenticated()
+
                 );
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
