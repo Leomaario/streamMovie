@@ -50,9 +50,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // CORREÇÃO: A lista de origens deve conter apenas os endereços do SEU FRONTEND.
         configuration.setAllowedOrigins(List.of("https://souzalink-coach.onrender.com", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -70,30 +69,23 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        // CORREÇÃO: A ordem das regras foi ajustada. As mais específicas vêm primeiro.
                         auth
-                                // 1. Rotas públicas
+                                // 1. ROTAS PÚBLICAS: Abertas para qualquer um.
                                 .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/auth/login").permitAll()
-                                .requestMatchers("/api/auth/login").permitAll()
 
-                                // 2. Rotas de ADMIN
-                                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                                // 2. ROTAS ESPECÍFICAS DE ADMIN: Apenas ADMIN pode aceder.
+                                .requestMatchers("/api/usuarios/**", "/api/dashboard/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
 
-                                // 3. Rotas de LÍDER e ADMIN
-                                .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+                                // 3. ROTAS DE GESTÃO DE VÍDEOS: ADMIN ou LIDER podem aceder.
+                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
 
-                                // 4. Rotas de qualquer usuário autenticado
-                                .requestMatchers(HttpMethod.GET, "/api/videos/**", "/api/catalogos/**", "/api/certificados/**", "/api/progresso/**", "/api/catalogos-detalhes/**", "/api/profile/**").authenticated()
-
-
+                                // 4. REGRA GERAL FINAL: Qualquer outra requisição precisa de autenticação.
                                 .anyRequest().authenticated()
                 );
 
