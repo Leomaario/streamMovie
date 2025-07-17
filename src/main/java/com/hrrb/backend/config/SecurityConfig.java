@@ -68,25 +68,29 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                .anyRequest().authenticated()
-                                // Rotas públicas que não precisam de token
-                                .requestMatchers("/api/auth/**").permitAll()
-                                // Rotas de ADMIN
-                                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
-                                // Rotas de LÍDER e ADMIN
-                                .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
-                                // Rotas que QUALQUER usuário logado pode aceder
-                                .requestMatchers(HttpMethod.GET, "/videos/**", "/catalogos/**", "/certificados/**", "/progresso/**", "/catalogos-detalhes/**", "/profile/**").authenticated()
+                        // 1. REGRAS MAIS ESPECÍFICAS PRIMEIRO
+                        // Rotas públicas que não precisam de token
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Rotas de ADMIN
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
+
+                        // Rotas de LÍDER e ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+                        .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+                        .requestMatchers(HttpMethod.POST, "/api/catalogos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+
+                        // 2. A REGRA GERAL "anyRequest" POR ÚLTIMO
                         // Qualquer outra requisição precisa de autenticação
+                        .anyRequest().authenticated()
                 );
+
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
-    }
-}
+    }}
