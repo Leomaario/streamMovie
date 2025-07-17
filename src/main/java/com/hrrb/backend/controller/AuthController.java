@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://souzalink-coach.onrender.com/")
+@CrossOrigin(origins = "https://souzalink-coach.onrender.com")
 public class AuthController {
 
 
