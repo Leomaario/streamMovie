@@ -74,6 +74,8 @@ public class SecurityConfig {
                         auth
                                 // 1. Rotas públicas
                                 .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
 
                                 // 2. Rotas de ADMIN
                                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
