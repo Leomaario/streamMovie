@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Esta classe trata erros de autenticação para a API REST
-@Component("authEntryPointJwt")
+@Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
@@ -41,5 +41,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         // Usa o ObjectMapper do Spring para escrever o JSON na resposta
         final ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);
+
     }
 }
