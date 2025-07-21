@@ -72,8 +72,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth
-                                // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
-                                .requestMatchers("/api/auth/**").permitAll()
+
 
                                 // 2. ROTAS DE ADMIN
                                 .requestMatchers("/api/usuarios/**", "/api/dashboard/**").hasRole("ADMIN")
@@ -87,7 +86,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
 
-                                // 4. REGRA GERAL FINAL: Qualquer outra requisição precisa de autenticação.
+                                // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
+                                .requestMatchers("/api/auth/**").permitAll()
+
                                 .anyRequest().authenticated()
                 );
 
