@@ -68,7 +68,6 @@ public class AuthController {
                     .collect(Collectors.toList());
 
             logLoginAttempt(userDetails, roles);
-
             return ResponseEntity.ok(new JwtResponse(
                     jwt,
                     userDetails.getId(),
