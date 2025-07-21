@@ -67,8 +67,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**", "login", "/auth/login", "auth/").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login","/auth/registrar").permitAll()
                                 .anyRequest().authenticated()
                 );
 
