@@ -2,7 +2,6 @@ package com.hrrb.backend.config;
 
 import com.hrrb.backend.security.jwt.AuthEntryPointJwt;
 import com.hrrb.backend.security.jwt.AuthTokenFilter;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 
 import java.util.List;
 
@@ -56,10 +54,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("https://souzalink-coach.onrender.com", "http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -68,25 +65,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
+        http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers("/api/auth/**", "/api/auth/login" , "/api/auth/registrar").permitAll()
+                                // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
+                                .requestMatchers("/api/auth/**").permitAll()
+
+                                // 2. ROTAS DE ADMIN
                                 .requestMatchers("/api/usuarios/**", "/api/dashboard/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+
+                                // 3. ROTAS DE LÍDER E ADMIN
                                 .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+
+                                // 4. REGRA GERAL FINAL: Qualquer outra requisição precisa de autenticação.
                                 .anyRequest().authenticated()
-                )
-                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                .build();
+                );
+
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 }
