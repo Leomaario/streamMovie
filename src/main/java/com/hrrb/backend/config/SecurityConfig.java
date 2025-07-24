@@ -89,7 +89,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
 
                                 // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
-                                .requestMatchers("/api/auth/login", "/api/auth/health").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers( "/api/auth/health").permitAll()
 
                                 .anyRequest().authenticated()
                 );
