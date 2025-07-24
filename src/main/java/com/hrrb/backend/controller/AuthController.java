@@ -148,8 +148,6 @@ public class AuthController {
         usuario.setPermissoes(request.getPermissoes());
         return usuario;
     }
-
-
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Acordando servidor");
