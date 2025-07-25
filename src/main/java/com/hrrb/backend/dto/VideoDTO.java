@@ -22,7 +22,7 @@ public class VideoDTO {
         this.titulo = video.getTitulo();
         this.descricao = video.getDescricao();
         this.duracaoSegundos = video.getDuracaoSegundos();
-        this.urlDoVideo = video.getUrlDoVideo();
+        this.urlDoVideo = video.getVideoUrl();
 
         if (video.getCatalogo() != null){
             this.catalogoId = video.getCatalogo().getId();

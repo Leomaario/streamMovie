@@ -27,7 +27,7 @@ public class Video {
     private String descricao;
 
     @Column(name = "video_url", length = 512)
-    private String urlDoVideo;
+    private String videoUrl;
 
     @Column(name = "duracao_segundos")
     Integer duracaoSegundos;

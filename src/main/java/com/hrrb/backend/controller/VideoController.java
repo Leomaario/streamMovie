@@ -23,16 +23,10 @@ public class VideoController {
 
     @Autowired
     private CatalogoRepository catalogoRepository;
-
-    // REMOVIDO: A dependência do FileStorageService não é mais necessária.
-    // @Autowired
-    // private FileStorageService fileStorageService;
-
-
-    // MUDANÇA: O endpoint de criação agora recebe um JSON simples, não mais um arquivo.
+// MUDANÇA: O endpoint de criação agora recebe um JSON simples, não mais um arquivo.
     @PostMapping
     public ResponseEntity<VideoDTO> createVideo(@RequestBody VideoDTO videoRequest) {
-        // Busca o catálogo pelo ID fornecido no DTO
+
         return catalogoRepository.findById(videoRequest.getCatalogoId())
                 .map(catalogo -> {
                     // Cria a nova entidade Video
@@ -63,7 +57,7 @@ public class VideoController {
     }
 
 
-    // GET /api/videos/buscar/{id} - Busca um vídeo específico (Nenhuma mudança necessária aqui)
+
     @GetMapping("/buscar/{id}")
     public ResponseEntity<VideoDTO> buscarVideoPorId(@PathVariable Long id) {
         return videoRepository.findById(id)
@@ -72,7 +66,7 @@ public class VideoController {
     }
 
 
-    // MUDANÇA: O endpoint de atualização agora também pode alterar a URL do vídeo.
+
     @PutMapping("/{id}")
     public ResponseEntity<VideoDTO> atualizarVideo(
             @PathVariable Long id,
