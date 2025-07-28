@@ -23,40 +23,31 @@ public class VideoController {
 
     @Autowired
     private CatalogoRepository catalogoRepository;
-// MUDANÇA: O endpoint de criação agora recebe um JSON simples, não mais um arquivo.
+
     @PostMapping
     public ResponseEntity<VideoDTO> createVideo(@RequestBody VideoDTO videoRequest) {
-
         return catalogoRepository.findById(videoRequest.getCatalogoId())
                 .map(catalogo -> {
-                    // Cria a nova entidade Video
                     Video novoVideo = new Video();
                     novoVideo.setTitulo(videoRequest.getTitulo());
                     novoVideo.setDescricao(videoRequest.getDescricao());
-                    // Define a URL do vídeo recebida do frontend
-                    novoVideo.setUrlDoVideo(videoRequest.getUrlDoVideo());
+
+                    // --- CORREÇÃO APLICADA AQUI ---
+                    novoVideo.setVideoUrl(videoRequest.getUrlDoVideo()); // Usando o novo método setVideoUrl
+
                     novoVideo.setCatalogo(catalogo);
-
-                    // Salva o vídeo no banco de dados
                     Video videoSalvo = videoRepository.save(novoVideo);
-
-                    // Retorna o DTO do vídeo criado
                     return new ResponseEntity<>(new VideoDTO(videoSalvo), HttpStatus.CREATED);
                 })
-                // Se o catálogo não for encontrado, retorna um erro.
                 .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
     }
 
-
-    // GET /api/videos - Lista todos os vídeos (Nenhuma mudança necessária aqui)
     @GetMapping
     public ResponseEntity<List<VideoDTO>> listarTodosVideos() {
         List<Video> videos = videoRepository.findAll();
         List<VideoDTO> videoDTOs = videos.stream().map(VideoDTO::new).collect(Collectors.toList());
         return ResponseEntity.ok(videoDTOs);
     }
-
-
 
     @GetMapping("/buscar/{id}")
     public ResponseEntity<VideoDTO> buscarVideoPorId(@PathVariable Long id) {
@@ -65,12 +56,10 @@ public class VideoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-
     @PutMapping("/{id}")
     public ResponseEntity<VideoDTO> atualizarVideo(
             @PathVariable Long id,
-            @RequestBody UpdateVideoRequest request) { // Assumindo que UpdateVideoRequest agora tem o campo 'urlDoVideo'
+            @RequestBody UpdateVideoRequest request) {
 
         return videoRepository.findById(id)
                 .map(videoExistente -> {
@@ -80,9 +69,10 @@ public class VideoController {
                     videoExistente.setTitulo(request.getTitulo());
                     videoExistente.setDescricao(request.getDescricao());
                     videoExistente.setCatalogo(novoCatalogo);
-                    // Adicionada a lógica para atualizar a URL do vídeo, se ela for fornecida.
+
                     if (request.getUrlDoVideo() != null && !request.getUrlDoVideo().isEmpty()) {
-                        videoExistente.setUrlDoVideo(request.getUrlDoVideo());
+                        // --- CORREÇÃO APLICADA AQUI TAMBÉM ---
+                        videoExistente.setVideoUrl(request.getUrlDoVideo()); // Usando o novo método setVideoUrl
                     }
 
                     Video videoSalvo = videoRepository.save(videoExistente);
@@ -91,8 +81,6 @@ public class VideoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-    // MUDANÇA: Lógica de apagar arquivo removida, pois não há mais arquivo.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarVideo(@PathVariable Long id) {
         return videoRepository.findById(id)
@@ -102,8 +90,4 @@ public class VideoController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
-
-    // REMOVIDO: O endpoint de streaming foi completamente removido.
-    // O streaming agora é responsabilidade do serviço externo (YouTube, Vimeo, etc.).
 }

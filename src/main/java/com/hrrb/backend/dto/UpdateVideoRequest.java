@@ -9,4 +9,6 @@ public class UpdateVideoRequest {
     private Integer duracaoSegundos;
     private String urlDoVideo;
     private Long catalogoId;
+
+
 }
