@@ -95,18 +95,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/relatorios/**").hasAuthority("ADMIN")
 
 
-
-
-                                // =================================================================
-                                // BLOCO 3: ROTAS DE GERENCIAMENTO DE VÍDEOS (LIDER & ADMIN)
-                                // Apenas LIDER e ADMIN podem criar, editar ou deletar vídeos.
-                                // =================================================================
-                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
-
-
                                 // =================================================================
                                 // BLOCO 4: ROTAS DE VISUALIZAÇÃO (qualquer usuário logado)
                                 // Qualquer usuário logado (USER, LIDER, ADMIN) pode VISUALIZAR (GET) os vídeos.
