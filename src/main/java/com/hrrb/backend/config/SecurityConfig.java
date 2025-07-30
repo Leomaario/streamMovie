@@ -83,13 +83,13 @@ public class SecurityConfig {
                                 // BLOCO 2: ROTAS DE ADMIN (precisa ter a permissão "ADMIN")
                                 // --- CORREÇÃO: Voltamos a usar hasRole ---
                                 // =================================================================
-                                .requestMatchers("/api/auth/registrar").hasRole("ADMIN")
-                                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
-                                .requestMatchers("/api/grupos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+                                .requestMatchers("/api/auth/registrar").hasAnyRole("ADMIN")
+                                .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN")
+                                .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN")
+                                .requestMatchers("/api/grupos/**").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAnyRole("ADMIN")
 
                                 // =================================================================
                                 // BLOCO 3: ROTAS DE GERENCIAMENTO DE VÍDEOS (LIDER & ADMIN)
