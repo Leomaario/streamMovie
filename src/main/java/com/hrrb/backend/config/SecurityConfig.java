@@ -81,19 +81,17 @@ public class SecurityConfig {
 
                                 // =================================================================
                                 // BLOCO 2: ROTAS DE ADMIN (precisa ter a permissão "ADMIN")
-                                // --- CORREÇÃO: Voltamos a usar hasRole ---
+                                // Admins podem fazer TUDO (GET, POST, PUT, DELETE) nessas rotas.
                                 // =================================================================
-                                .requestMatchers("/api/auth/registrar").hasAnyRole("ADMIN")
-                                .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN")
-                                .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN")
-                                .requestMatchers("/api/grupos/**").hasAnyRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasAnyRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasAnyRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAnyRole("ADMIN")
+                                .requestMatchers("/api/auth/registrar").hasRole("ADMIN")
+                                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                                .requestMatchers("/api/grupos/**").hasRole("ADMIN")
+                                .requestMatchers("/api/catalogos/**").hasRole("ADMIN")
 
                                 // =================================================================
                                 // BLOCO 3: ROTAS DE GERENCIAMENTO DE VÍDEOS (LIDER & ADMIN)
-                                // --- CORREÇÃO: Voltamos a usar hasAnyRole ---
+                                // Apenas LIDER e ADMIN podem criar, editar ou deletar vídeos.
                                 // =================================================================
                                 .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
@@ -101,13 +99,14 @@ public class SecurityConfig {
 
                                 // =================================================================
                                 // BLOCO 4: ROTAS DE VISUALIZAÇÃO (qualquer usuário logado)
+                                // Qualquer usuário logado (USER, LIDER, ADMIN) pode VISUALIZAR (GET) os vídeos.
                                 // =================================================================
-                                .requestMatchers(HttpMethod.GET, "/api/catalogos", "/api/catalogos/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/videos", "/api/videos/buscar/**").authenticated()
-                                .requestMatchers("/api/progresso/**").authenticated()
+                                .requestMatchers("/api/progresso/**").authenticated() // Ver e marcar progresso
 
                                 // =================================================================
                                 // BLOCO 5: REGRA FINAL (segurança extra)
+                                // Qualquer outra requisição não listada acima precisa de login.
                                 // =================================================================
                                 .anyRequest().authenticated()
                 );
