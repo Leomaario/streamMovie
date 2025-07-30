@@ -79,9 +79,19 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
+
+
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+
+                                //POST
                                 .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/videos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/grupos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/dashboard/**").hasRole("ADMIN")
+
+
 
                                 // 3. ROTAS DE LÍDER E ADMIN
                                 .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
