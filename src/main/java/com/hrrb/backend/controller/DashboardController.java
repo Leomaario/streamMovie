@@ -24,7 +24,8 @@ public class DashboardController {
     public ResponseEntity<DashboardStatsDTO> getStats() {
         long totalCursos = videoRepository.count();
         long totalUsuarios = usuarioRepository.count();
-        long totalRelatorios = 0; // Por enquanto, fixo em 0
+        long totalRelatorios = 0;
+
 
         DashboardStatsDTO stats = new DashboardStatsDTO(totalCursos, totalUsuarios, totalRelatorios);
         return ResponseEntity.ok(stats);

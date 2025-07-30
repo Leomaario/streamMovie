@@ -77,7 +77,6 @@ public class CatalogoController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- MÉTODO NOVO PARA A PLAYLIST ---
     @GetMapping("/{catalogoId}/videos")
     public ResponseEntity<List<VideoDTO>> listarVideosPorCatalogo(@PathVariable Long catalogoId) {
         // Usa o VideoRepository para encontrar todos os vídeos com o ID do catálogo

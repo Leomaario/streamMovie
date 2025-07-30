@@ -75,48 +75,75 @@ public class SecurityConfig {
                                 // =================================================================
                                 // BLOCO 1: ROTAS PÚBLICAS (não precisam de login)
                                 // =================================================================
-                                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/auth/health", "/api/catalogos/keep-alive").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/health").permitAll()
+                                .requestMatchers("/api/catalogos/keep-alive").permitAll()
 
                                 // =================================================================
-                                // BLOCO 2: ROTAS DE ADMIN (precisa ser ADMIN)
-                                // Apenas ADMIN pode criar/editar/deletar usuários, grupos, catálogos.
+                                // BLOCO 2: ROTAS DE ADMIN (precisa ter a permissão "ADMIN")
+                                // Admins podem fazer TUDO (GET, POST, PUT, DELETE) nessas rotas.
                                 // =================================================================
-                                .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasAuthority("ADMIN")
+                                .requestMatchers("/api/auth/registrar").hasAuthority("ADMIN")
                                 .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
                                 .requestMatchers("/api/dashboard/**").hasAuthority("ADMIN")
                                 .requestMatchers("/api/grupos/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/*").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total-users").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total-videos").hasAuthority("ADMIN")
+                                .requestMatchers("/api/catalogos").hasAuthority("ADMIN") // POST, PUT, DELETE
+                                .requestMatchers("/api/catalogos/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/videos/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/dashboard/stats").hasAuthority("ADMIN")
+                                .requestMatchers("/api/progresso/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/relatorios/**").hasAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.DELETE,"/api/videos/buscar/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE,"/api/videos/**").hasAuthority("ADMIN")
+
+
 
                                 // =================================================================
-                                // BLOCO 3: ROTAS DE GERENCIAMENTO DE CONTEÚDO (precisa ser LIDER ou ADMIN)
-                                // LIDER e ADMIN podem criar/editar/deletar vídeos.
+                                // BLOCO 3: ROTAS DE GERENCIAMENTO DE VÍDEOS (LIDER & ADMIN)
+                                // Apenas LIDER e ADMIN podem criar, editar ou deletar vídeos.
                                 // =================================================================
                                 .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
+
 
                                 // =================================================================
-                                // BLOCO 4: ROTAS DE VISUALIZAÇÃO (qualquer um logado pode acessar)
-                                // USER, LIDER e ADMIN podem visualizar (GET) os conteúdos.
+                                // BLOCO 4: ROTAS DE VISUALIZAÇÃO (qualquer usuário logado)
+                                // Qualquer usuário logado (USER, LIDER, ADMIN) pode VISUALIZAR (GET) os vídeos.
                                 // =================================================================
-                                .requestMatchers(HttpMethod.GET, "/api/catalogos", "/api/catalogos/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/videos", "/api/videos/buscar/**").authenticated()
                                 .requestMatchers("/api/progresso/**").authenticated() // Ver e marcar progresso
 
+
+                                //========================================================================
+                                // BLOCO 5: PAINEL DE ADM, TODOS OS METHOD
+
+                                //GET
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.GET, "/api/usuarios").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.GET, "/api/user-dashboard/data").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.GET, "/api/grupos").hasAnyAuthority("ADMIN", "LIDER")
+                                //PUT
+                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/stats").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/progresso/**").hasAnyAuthority("ADMIN", "LIDER")
+                                //POST
+                                .requestMatchers(HttpMethod.POST, "/api/grupos").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.POST, "/api/usuarios").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
+                                //DELETE
+                                .requestMatchers(HttpMethod.DELETE, "/api/grupos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/progresso/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyAuthority("ADMIN", "LIDER")
+
                                 // =================================================================
-                                // BLOCO 5: REGRA FINAL (qualquer outra coisa precisa de login)
+                                // BLOCO 5: REGRA FINAL (segurança extra)
+                                // Qualquer outra requisição não listada acima precisa de login.
                                 // =================================================================
                                 .anyRequest().authenticated()
                 );
