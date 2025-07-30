@@ -115,32 +115,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/progresso/**").authenticated() // Ver e marcar progresso
 
 
-                                //========================================================================
-                                // BLOCO 5: PAINEL DE ADM, TODOS OS METHOD
-
-                                //GET
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.GET, "/api/usuarios").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.GET, "/api/user-dashboard/data").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.GET, "/api/grupos").hasAnyAuthority("ADMIN", "LIDER")
-                                //PUT
-                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/stats").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/progresso/**").hasAnyAuthority("ADMIN", "LIDER")
-                                //POST
-                                .requestMatchers(HttpMethod.POST, "/api/grupos").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.POST, "/api/usuarios").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
-                                //DELETE
-                                .requestMatchers(HttpMethod.DELETE, "/api/grupos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/progresso/**").hasAnyAuthority("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyAuthority("ADMIN", "LIDER")
-
                                 // =================================================================
                                 // BLOCO 5: REGRA FINAL (segurança extra)
                                 // Qualquer outra requisição não listada acima precisa de login.
