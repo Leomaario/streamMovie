@@ -22,6 +22,13 @@ public class CatalogoController {
     @Autowired
     private VideoRepository videoRepository;
 
+
+    @GetMapping("/keep-alive")
+    public ResponseEntity<String> keepAlive() {
+        long count = catalogoRepository.count();
+        return ResponseEntity.ok("API and DB are awake. Catalog count: " + count);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CatalogoDTO> buscarCatalogoPorId(@PathVariable Long id) {
         return catalogoRepository.findById(id)

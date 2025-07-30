@@ -115,6 +115,7 @@ public class SecurityConfig {
                                 // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
                                 .requestMatchers("/api/auth/login").permitAll()
                                 .requestMatchers( "/api/auth/health").permitAll()
+                                .requestMatchers( "/api/catalogos/keep-alive").permitAll()
 
                                 .anyRequest().authenticated()
                 );
