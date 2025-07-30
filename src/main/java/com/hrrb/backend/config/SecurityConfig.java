@@ -101,10 +101,13 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/grupos/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/dashboard/**").hasAnyRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAnyRole("ADMIN")
+
+
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ROLE_ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos").hasAnyRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos").hasAnyRole("ROLE_ADMIN")
 
 
                                 // 3. ROTAS DE LÍDER E ADMIN
