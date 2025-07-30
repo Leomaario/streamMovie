@@ -72,53 +72,33 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth
+                                // ROTAS PÚBLICAS
+                                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/health", "/api/catalogos/keep-alive").permitAll()
 
+                                // ROTAS DE ADMINISTRADOR (ADMIN)
+                                .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasAuthority("ADMIN")
+                                .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/dashboard/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/grupos/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAuthority("ADMIN")
 
-                                // 2. ROTAS DE ADMIN
-                                .requestMatchers("/api/usuarios/**", "/api/dashboard/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/grupos").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
+                                // ROTAS DE GERENCIAMENTO DE CONTEÚDO (LIDER & ADMIN)
+                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyAuthority("ADMIN", "LIDER")
 
-                                //POST
-                                .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/auth/registrar").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/videos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/grupos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/dashboard/**").hasRole("ADMIN")
-                                
-                                //PUT
-                                .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/auth/registrar").hasRole("ADMIN")
+                                // ROTAS DE USUÁRIO AUTENTICADO (TODOS OS LOGADOS)
+                                .requestMatchers(HttpMethod.GET, "/api/catalogos", "/api/catalogos/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/videos", "/api/videos/buscar/**").authenticated()
+                                .requestMatchers("/api/progresso/**").authenticated()
 
-                                //DELET
-                                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/grupos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/dashboard/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos").hasRole("ADMIN")
-
-
-                                // 3. ROTAS DE LÍDER E ADMIN
-                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-
-                                // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
-                                .requestMatchers("/api/auth/login").permitAll()
-                                .requestMatchers( "/api/auth/health").permitAll()
-                                .requestMatchers( "/api/catalogos/keep-alive").permitAll()
-
+                                // REGRA FINAL
                                 .anyRequest().authenticated()
                 );
+
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
