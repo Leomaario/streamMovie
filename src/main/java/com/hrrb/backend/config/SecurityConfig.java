@@ -81,31 +81,33 @@ public class SecurityConfig {
 
                                 // =================================================================
                                 // BLOCO 2: ROTAS DE ADMIN (precisa ter a permissão "ADMIN")
-                                // Admins podem fazer TUDO (GET, POST, PUT, DELETE) nessas rotas.
+                                // --- CORREÇÃO: Voltamos a usar hasRole ---
                                 // =================================================================
-                                .requestMatchers("/api/auth/registrar").hasAuthority("ADMIN")
-                                .requestMatchers("/api/usuarios/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/dashboard/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/grupos/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/catalogos").hasAuthority("ADMIN") // POST, PUT, DELETE
-                                .requestMatchers("/api/catalogos/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/videos/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/dashboard/stats").hasAuthority("ADMIN")
-                                .requestMatchers("/api/progresso/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/relatorios/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/auth/registrar").hasRole("ADMIN")
+                                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                                .requestMatchers("/api/grupos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/catalogos").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasRole("ADMIN")
 
+                                // =================================================================
+                                // BLOCO 3: ROTAS DE GERENCIAMENTO DE VÍDEOS (LIDER & ADMIN)
+                                // --- CORREÇÃO: Voltamos a usar hasAnyRole ---
+                                // =================================================================
+                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
 
                                 // =================================================================
                                 // BLOCO 4: ROTAS DE VISUALIZAÇÃO (qualquer usuário logado)
-                                // Qualquer usuário logado (USER, LIDER, ADMIN) pode VISUALIZAR (GET) os vídeos.
                                 // =================================================================
+                                .requestMatchers(HttpMethod.GET, "/api/catalogos", "/api/catalogos/**").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/videos", "/api/videos/buscar/**").authenticated()
-                                .requestMatchers("/api/progresso/**").authenticated() // Ver e marcar progresso
-
+                                .requestMatchers("/api/progresso/**").authenticated()
 
                                 // =================================================================
                                 // BLOCO 5: REGRA FINAL (segurança extra)
-                                // Qualquer outra requisição não listada acima precisa de login.
                                 // =================================================================
                                 .anyRequest().authenticated()
                 );
