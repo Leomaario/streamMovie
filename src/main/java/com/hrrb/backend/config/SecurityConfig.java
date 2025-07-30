@@ -89,6 +89,15 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/catalogos").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/*").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total-users").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/dashboard/stats/total-videos").hasAuthority("ADMIN")
+
+                                .requestMatchers(HttpMethod.DELETE,"/api/videos/buscar/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE,"/api/videos/**").hasAuthority("ADMIN")
 
                                 // =================================================================
                                 // BLOCO 3: ROTAS DE GERENCIAMENTO DE CONTEÚDO (precisa ser LIDER ou ADMIN)
