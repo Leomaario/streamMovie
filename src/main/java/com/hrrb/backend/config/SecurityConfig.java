@@ -102,16 +102,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/grupos/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/dashboard/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/catalogos/**").hasAnyRole("ADMIN")
-
-
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/videos").hasAnyRole("ADMIN")
-
-
-                                // 3. ROTAS DE LÍDER E ADMIN
-                                .requestMatchers(HttpMethod.POST, "/api/videos").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/videos/**").hasAnyRole("ADMIN", "LIDER")
 
 
                                 // 1. ROTAS PÚBLICAS: Abertas pra qualquer um.
