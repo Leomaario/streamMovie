@@ -90,7 +90,14 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/grupos/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/dashboard/**").hasRole("ADMIN")
-
+                                
+                                //PUT
+                                .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/grupos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/dashboard/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/videos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/catalogos/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/auth/registrar").hasRole("ADMIN")
 
 
                                 // 3. ROTAS DE LÍDER E ADMIN
