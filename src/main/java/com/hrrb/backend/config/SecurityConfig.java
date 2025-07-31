@@ -102,7 +102,7 @@ public class SecurityConfig {
                                 // Qualquer usuário logado (USER, LIDER, ADMIN) pode VISUALIZAR (GET) os vídeos.
                                 // =================================================================
                                 .requestMatchers(HttpMethod.GET, "/api/videos", "/api/videos/buscar/**").authenticated()
-                                .requestMatchers("/api/progresso/**").authenticated() // Ver e marcar progresso
+                                .requestMatchers(HttpMethod.DELETE, "/api/progresso/**", "/api/videos/").authenticated() // Ver e marcar progresso
 
                                 // =================================================================
                                 // BLOCO 5: REGRA FINAL (segurança extra)
