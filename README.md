@@ -198,13 +198,11 @@ Este projeto está sob a licença [MIT](LICENSE.md)
 - [ ] Sistema de Avaliações
 
 ## 📞 Contato
-- LinkedIn: [Seu LinkedIn]
-- Email: [Seu Email]
+- LinkedIn: https://www.linkedin.com/in/leomaario/
+- Email: leomariodev@outlook.com
 
 ## 🙏 Agradecimentos
 - Equipe de desenvolvimento
 - Contribuidores
 - Comunidade Open Source
 
----
-⌨️ com ❤️ por [Seu Nome] 😊
