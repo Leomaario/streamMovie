@@ -1,97 +1,210 @@
-# SouzaLink Coach - Plataforma de E-Learning
-
-![Dashboard](https://i.imgur.com/Qk2w4gV.png)
+# E-Learning Platform API
 
 ## 🚀 Sobre o Projeto
+API desenvolvida para uma plataforma de E-Learning, permitindo gestão de cursos, vídeos e progresso dos alunos. Sistema completo de autenticação e autorização com diferentes níveis de acesso.
 
-O SouzaLink Coach é uma plataforma de e-learning completa e robusta, desenhada para gestão e distribuição de conteúdo de capacitação interna. A aplicação permite que administradores organizem cursos em catálogos, façam upload de vídeos, e que os utilizadores assistam ao conteúdo, acompanhem o seu progresso e emitam certificados.
+## 📋 Funcionalidades Principais
 
-Este projeto foi construído do zero como um sistema full-stack moderno, utilizando Java com Spring Boot no backend e React com Vite no frontend.
-
----
+- ✅ Autenticação e Autorização com JWT
+- 👤 Gestão de Usuários e Perfis
+- 📚 Gerenciamento de Catálogos de Cursos
+- 🎥 Sistema de Upload e Gestão de Vídeos
+- 📊 Dashboard com Estatísticas
+- 📝 Acompanhamento de Progresso do Aluno
+- 🔐 Níveis de Acesso (Admin, Moderador, Usuário)
 
 ## 🛠️ Tecnologias Utilizadas
 
-O projeto é dividido em duas partes principais:
+### Backend
+- **Framework**: Spring Boot (Jakarta EE)
+- **Linguagem**: Java 23
+- **Build Tool**: Maven
+- **Database**: PostgreSQL
+- **ORM**: Spring Data JPA
+- **Segurança**: Spring Security + JWT
 
-### **Backend (API RESTful)**
-* **Linguagem:** Java 17
-* **Framework:** Spring Boot 3.3.1
-* **Segurança:** Spring Security com autenticação baseada em Token JWT.
-* **Base de Dados:** Spring Data JPA / Hibernate com PostgreSQL.
-* **Gestão de Dependências:** Maven
-* **Servidor:** Docker para a base de dados PostgreSQL.
+### Dependências Principais
+```xml
+<!-- Adicionar no pom.xml -->
+<dependencies>
+    <!-- Spring Boot -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Security -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    
+    <!-- PostgreSQL -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+    </dependency>
+    
+    <!-- JWT -->
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+    </dependency>
+    
+    <!-- Lombok -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+    </dependency>
+</dependencies>
+```
 
-### **Frontend (Single Page Application)**
-* **Framework:** React 18 com Vite.
-* **Roteamento:** React Router DOM.
-* **Estilização:** CSS puro com foco em layouts modernos (Flexbox e Grid) e responsividade.
-* **UI/UX:** Componentes interativos, design "clean" e animações subtis para uma melhor experiência do utilizador.
-* **Ícones:** React Bootstrap Icons.
+
+## 🏗️ Estrutura do Projeto
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/hrrb/backend/
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── dto/
+│   │       ├── exception/
+│   │       ├── model/
+│   │       ├── repository/
+│   │       ├── security/
+│   │       └── BackendApplication.java
+│   └── resources/
+│       └── application.properties
+```
+
+
+## 🔐 Endpoints da API
+
+### Autenticação
+```
+POST /api/auth/login - Login de usuário
+POST /api/auth/registrar - Registro de novo usuário
+GET /api/auth/health - Status do servidor
+```
+
+
+### Dashboard
+```
+GET /api/dashboard/stats - Estatísticas gerais
+GET /api/user-dashboard/data - Dados do dashboard do usuário
+```
+
+
+### Vídeos
+```
+GET /api/videos - Lista todos os vídeos
+POST /api/videos - Adiciona novo vídeo
+PUT /api/videos/{id} - Atualiza vídeo
+DELETE /api/videos/{id} - Remove vídeo
+```
+
+
+### Catálogos
+```
+GET /api/catalogos - Lista catálogos
+POST /api/catalogos - Cria catálogo
+PUT /api/catalogos/{id} - Atualiza catálogo
+DELETE /api/catalogos/{id} - Remove catálogo
+```
+
+
+## ⚙️ Configuração do Ambiente
+
+### Variáveis de Ambiente
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://seu-banco-de-dados
+SPRING_DATASOURCE_USERNAME=seu-usuario
+SPRING_DATASOURCE_PASSWORD=sua-senha
+JWT_SECRET=sua-chave-secreta
+```
+
+
+### Application Properties
+```properties
+spring.application.name=backend
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+jwt.expirationMs=86400000
+```
+
+
+## 🚀 Deploy
+
+### Pré-requisitos
+- Java 23
+- Maven
+- PostgreSQL
+
+### Passos para Deploy
+1. Clone o repositório
+```shell script
+git clone https://seu-repositorio.git
+```
+
+
+2. Configure as variáveis de ambiente
+
+3. Build do projeto
+```shell script
+mvn clean install
+```
+
+
+4. Execute o projeto
+```shell script
+java -jar target/backend-0.0.1-SNAPSHOT.jar
+```
+
+
+## 🔒 Segurança
+
+### Níveis de Acesso
+- **ADMIN**: Acesso total ao sistema
+- **MODERADOR**: Gestão de conteúdo
+- **USER**: Acesso aos cursos e progresso
+
+### JWT Configuration
+- Token expira em 24 horas
+- Refresh token não implementado
+
+## 📝 Logs e Monitoramento
+- Logging detalhado para debugging
+- Monitoramento de autenticação
+- Rastreamento de requisições
+
+## 🤝 Contribuição
+1. Faça um Fork do projeto
+2. Crie sua Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a Branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+Este projeto está sob a licença [MIT](LICENSE.md)
+
+## 🎯 Status do Projeto
+- [x] Autenticação JWT
+- [x] CRUD de Vídeos
+- [x] CRUD de Catálogos
+- [x] Dashboard
+- [ ] Sistema de Notificações
+- [ ] Chat em Tempo Real
+- [ ] Sistema de Avaliações
+
+## 📞 Contato
+- LinkedIn: [Seu LinkedIn]
+- Email: [Seu Email]
+
+## 🙏 Agradecimentos
+- Equipe de desenvolvimento
+- Contribuidores
+- Comunidade Open Source
 
 ---
-
-## ✨ Funcionalidades Principais
-
-O sistema possui dois lados: a visão do utilizador comum e a área de gestão do administrador.
-
-### **Para Todos os Utilizadores:**
-* **Login Seguro:** Autenticação com utilizador/senha e validação por token JWT.
-* **Dashboard Personalizado:** Exibe estatísticas de progresso, cursos em destaque e certificados recentes.
-* **Catálogo de Cursos:** Navegação por catálogos que agrupam os vídeos por tema.
-* **Player de Vídeo:** Streaming de vídeo seguro e autenticado, com playlist de vídeos do catálogo.
-* **Sistema de Progresso:** Funcionalidade de "Marcar como Concluído" para cada vídeo.
-* **Página de Certificados:** Galeria para visualizar os certificados conquistados.
-* **Design Responsivo:** A experiência adapta-se a qualquer tamanho de tela, do desktop ao telemóvel.
-
-### **Para Administradores:**
-* **Painel de Admin:** Dashboard com estatísticas gerais da plataforma (total de cursos, utilizadores) e uma lista dos últimos utilizadores registados.
-* **Gestão de Utilizadores:** Uma página dedicada para listar, editar e apagar utilizadores.
-* **Gestão de Catálogos:** Interface para criar, editar e apagar catálogos de cursos.
-* **Gestão de Cursos (Vídeos):** Ferramentas para fazer upload de novos vídeos (com thumbnail opcional), editar os seus detalhes e apagá-los.
-* **Controlo de Acesso Baseado em Permissões (RBAC):** Rotas do backend e links/botões do frontend são protegidos, aparecendo apenas para utilizadores com a permissão correta (`ADMIN`, `LIDER`, `USER`).
-
----
-
-## ⚙️ Como Executar o Projeto Localmente
-
-Para rodar este projeto na sua máquina, você vai precisar de:
-* Java (JDK 17 ou superior)
-* Maven 3.8+
-* Node.js 18+ (com npm)
-* Docker e Docker Compose
-
-### **Passos:**
-
-1.  **Clonar o Repositório:**
-    ```sh
-    git clone [https://github.com/seu-usuario/seu-repositorio.git](https://github.com/seu-usuario/seu-repositorio.git)
-    cd seu-repositorio
-    ```
-
-2.  **Configurar o Backend:**
-    * Navegue para a pasta `backend`.
-    * No ficheiro `application.properties`, ajuste as credenciais do banco de dados se necessário.
-    * Rode `mvn clean install` para compilar o projeto.
-
-3.  **Configurar o Frontend:**
-    * Navegue para a pasta `frontend`.
-    * Rode `npm install` para instalar as dependências.
-
-4.  **Iniciar o Ambiente com Docker:**
-    * Na pasta raiz do projeto (onde está o `docker-compose.yml`), rode:
-        ```sh
-        docker-compose up
-        ```
-    * Isto irá iniciar o banco de dados PostgreSQL.
-
-5.  **Iniciar os Servidores:**
-    * Num terminal, na pasta `backend`, inicie a aplicação Spring: `mvn spring-boot:run` ou execute a classe principal na sua IDE.
-    * Noutro terminal, na pasta `frontend`, inicie o servidor de desenvolvimento: `npm run dev`.
-
-6.  **Aceder à Aplicação:**
-    * Abra o seu navegador e vá para `http://localhost:5173`.
-
----
-
-Feito, meu parça! Este `README` dá uma visão geral completa e profissional do projeto que a gente construiu.
+⌨️ com ❤️ por [Seu Nome] 😊
